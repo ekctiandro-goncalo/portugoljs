@@ -1,0 +1,17 @@
+pagina Inicio {
+    titulo "Portugol"
+    texto "Programação em português para a web moderna."
+    
+    cartao {
+        titulo "O que é?"
+        texto "Uma linguagem que compila para React e Next.js."
+    }
+
+    botao { texto "Ver Projetos" }
+
+    texto "Feito para a comunidade lusófona."
+    entrada email
+    botao { texto "Inscrever" }
+
+    texto "© 2026 Portugol"
+}

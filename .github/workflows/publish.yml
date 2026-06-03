@@ -1,0 +1,69 @@
+name: Publicar no NPM
+
+on:
+  push:
+    tags:
+      - 'v*'  # Dispara quando fazeres push de uma tag como v0.1.0, v1.0.0
+
+jobs:
+  publicar-compiler:
+    name: Publicar @portugol/compiler
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Necessário para Trusted Publishing
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Instalar dependências
+        run: npm install
+        working-directory: packages/compiler
+
+      - name: Build compiler
+        run: npm run build
+        working-directory: packages/compiler
+
+      - name: Publicar @portugol/compiler
+        run: npm publish --access public
+        working-directory: packages/compiler
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publicar-cli:
+    name: Publicar @portugol/cli
+    runs-on: ubuntu-latest
+    needs: publicar-compiler  # Só publica CLI depois do compiler
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Instalar dependências root
+        run: npm install
+
+      - name: Build CLI
+        run: npm run build
+        working-directory: packages/cli
+
+      - name: Publicar @portugol/cli
+        run: npm publish --access public
+        working-directory: packages/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

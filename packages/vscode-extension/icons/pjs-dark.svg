@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Fundo com gradiente igual ao estilo do JS/HTML -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.12)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo arredondado -->
+  <rect width="32" height="32" rx="6" fill="url(#bg)"/>
+  <!-- Brilho no topo -->
+  <rect width="32" height="16" rx="6" fill="url(#shine)"/>
+  <!-- Borda subtil -->
+  <rect width="31" height="31" x="0.5" y="0.5" rx="5.5" stroke="rgba(255,255,255,0.15)" stroke-width="1" fill="none"/>
+
+  <!-- Letra P estilizada -->
+  <text
+    x="5"
+    y="23"
+    font-family="'Segoe UI', -apple-system, sans-serif"
+    font-size="17"
+    font-weight="700"
+    fill="#a5b4fc"
+    letter-spacing="-0.5"
+  >P</text>
+
+  <!-- JS pequeno no canto inferior direito — igual ao badge do JS -->
+  <rect x="17" y="17" width="13" height="13" rx="2.5" fill="#f0db4f"/>
+  <text
+    x="19.5"
+    y="27"
+    font-family="'Segoe UI', -apple-system, sans-serif"
+    font-size="7.5"
+    font-weight="700"
+    fill="#323330"
+    letter-spacing="-0.3"
+  >JS</text>
+</svg>

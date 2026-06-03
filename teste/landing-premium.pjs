@@ -1,0 +1,471 @@
+pagina Portugol {
+
+    # ════════════════════════════════════════════════════
+    # NAV
+    # ════════════════════════════════════════════════════
+    secao Nav {
+        padding 0
+
+        linha {
+            coluna {
+                titulo {
+                    texto "portugol.js"
+                    tamanho 20
+                    peso 700
+                }
+                texto {
+                    "by Eketiandro Gonçalo"
+                    tamanho 11
+                }
+            }
+            linha {
+                ligacao { texto "Docs" para "#docs" }
+                ligacao { texto "Exemplos" para "#exemplos" }
+                ligacao { texto "Comunidade" para "#comunidade" }
+                ligacao {
+                    texto "GitHub"
+                    para "https://github.com"
+                }
+            }
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # HERO
+    # ════════════════════════════════════════════════════
+    secao Hero {
+        centralizar
+        padding 140
+
+        distintivo "Código aberto · Gratuito para sempre"
+
+        espacador 32
+
+        titulo {
+            texto "Programa a web"
+            tamanho 88
+            peso 700
+            alinhamento centro
+        }
+
+        titulo {
+            texto "em português."
+            tamanho 88
+            peso 700
+            alinhamento centro
+        }
+
+        espacador 28
+
+        texto {
+            "A primeira linguagem de programação web escrita em português."
+            tamanho 20
+            alinhamento centro
+        }
+        texto {
+            "Do .pjs ao browser em segundos — sem configuração, sem fricção."
+            tamanho 20
+            alinhamento centro
+        }
+
+        espacador 48
+
+        linha {
+            botao { texto "Começar agora" }
+            ligacao {
+                texto "Ver documentação →"
+                para "#docs"
+            }
+        }
+
+        espacador 64
+
+        # Bloco de código simulado
+        cartao {
+            coluna {
+                linha {
+                    distintivo "exemplo.pjs"
+                }
+                espacador 16
+                texto {
+                    "pagina Inicio {"
+                    tamanho 15
+                }
+                texto {
+                    "    titulo \"Olá Mundo\""
+                    tamanho 15
+                }
+                texto {
+                    "    texto \"A minha primeira página.\""
+                    tamanho 15
+                }
+                texto {
+                    "    botao { texto \"Começar\" }"
+                    tamanho 15
+                }
+                texto {
+                    "}"
+                    tamanho 15
+                }
+                espacador 16
+                linha {
+                    icone verificar
+                    texto {
+                        "Compila para React automaticamente"
+                        tamanho 14
+                    }
+                }
+            }
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # NÚMEROS
+    # ════════════════════════════════════════════════════
+    secao Numeros {
+        centralizar
+        padding 80
+
+        grade 3 {
+            coluna {
+                centralizar
+                titulo {
+                    texto "100%"
+                    tamanho 52
+                    peso 700
+                }
+                texto {
+                    "Português"
+                    alinhamento centro
+                }
+            }
+            coluna {
+                centralizar
+                titulo {
+                    texto "0"
+                    tamanho 52
+                    peso 700
+                }
+                texto {
+                    "Configuração necessária"
+                    alinhamento centro
+                }
+            }
+            coluna {
+                centralizar
+                titulo {
+                    texto "∞"
+                    tamanho 52
+                    peso 700
+                }
+                texto {
+                    "Possibilidades"
+                    alinhamento centro
+                }
+            }
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # FUNCIONALIDADES
+    # ════════════════════════════════════════════════════
+    secao Funcionalidades {
+        padding 100
+
+        coluna {
+            centralizar
+            distintivo "Funcionalidades"
+            espacador 20
+            titulo {
+                texto "Tudo o que precisas"
+                tamanho 52
+                peso 700
+                alinhamento centro
+            }
+            subtitulo {
+                texto "Uma linguagem. Um comando. O teu site no ar."
+                alinhamento centro
+            }
+        }
+
+        espacador 72
+
+        grade 3 {
+            cartao {
+                icone relampago
+                espacador 16
+                subtitulo "Sintaxe natural"
+                espacador 8
+                texto "Escreves como pensas — em português. Sem decorar termos em inglês."
+            }
+            cartao {
+                icone codigo
+                espacador 16
+                subtitulo "Compila para React"
+                espacador 8
+                texto "O teu .pjs torna-se componentes React válidos, prontos para o Next.js."
+            }
+            cartao {
+                icone foguete
+                espacador 16
+                subtitulo "Live Reload"
+                espacador 8
+                texto "Guardas o ficheiro e o browser actualiza instantaneamente."
+            }
+            cartao {
+                icone escudo
+                espacador 16
+                subtitulo "HTML Estático"
+                espacador 8
+                texto "Gera páginas HTML + CSS sem servidor. Funciona em qualquer hosting."
+            }
+            cartao {
+                icone pacote
+                espacador 16
+                subtitulo "CLI Completa"
+                espacador 8
+                texto "portugol iniciar, construir, exportar — tudo num comando."
+            }
+            cartao {
+                icone globo
+                espacador 16
+                subtitulo "Open Source"
+                espacador 8
+                texto "MIT License. Código aberto. Contribuições bem-vindas."
+            }
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # COMO FUNCIONA
+    # ════════════════════════════════════════════════════
+    secao ComoFunciona {
+        padding 100
+
+        coluna {
+            centralizar
+            distintivo "Como funciona"
+            espacador 20
+            titulo {
+                texto "Do zero ao browser"
+                tamanho 52
+                peso 700
+                alinhamento centro
+            }
+            titulo {
+                texto "em 3 passos."
+                tamanho 52
+                peso 700
+                alinhamento centro
+            }
+        }
+
+        espacador 72
+
+        grade 3 {
+            cartao {
+                linha {
+                    distintivo "01"
+                }
+                espacador 20
+                subtitulo "Instala"
+                espacador 8
+                texto "Uma linha no terminal:"
+                espacador 12
+                texto {
+                    "npm install -g @portugol/cli"
+                    tamanho 14
+                    peso 600
+                }
+            }
+            cartao {
+                linha {
+                    distintivo "02"
+                }
+                espacador 20
+                subtitulo "Escreve"
+                espacador 8
+                texto "Cria um ficheiro .pjs com a tua página em português."
+                espacador 12
+                lista {
+                    item "pagina, titulo, texto"
+                    item "botao, cartao, grade"
+                    item "ligacao, icone, lista"
+                }
+            }
+            cartao {
+                linha {
+                    distintivo "03"
+                }
+                espacador 20
+                subtitulo "Roda"
+                espacador 8
+                texto "Um comando e o teu site está no ar:"
+                espacador 12
+                texto {
+                    "portugol iniciar pagina.pjs"
+                    tamanho 14
+                    peso 600
+                }
+            }
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # CITAÇÕES / TESTEMUNHOS
+    # ════════════════════════════════════════════════════
+    secao Testemunhos {
+        padding 100
+        centralizar
+
+        distintivo "Comunidade"
+        espacador 20
+        titulo {
+            texto "O que dizem sobre nós"
+            tamanho 44
+            peso 700
+            alinhamento centro
+        }
+
+        espacador 56
+
+        grade 3 {
+            citacao {
+                texto "Finalmente consigo criar páginas web sem ter de aprender inglês primeiro. O Portugol.js mudou tudo para mim."
+                autor "Maria Santos, estudante"
+            }
+            citacao {
+                texto "Uso para ensinar programação a jovens. A barreira do idioma desapareceu completamente."
+                autor "Professor Rui Costa, ensino secundário"
+            }
+            citacao {
+                texto "Em 10 minutos tinha a minha landing page no ar. Nunca fui tão rápido a construir algo."
+                autor "Filipe Mendes, empreendedor"
+            }
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # CTA FINAL
+    # ════════════════════════════════════════════════════
+    secao CTA {
+        centralizar
+        padding 120
+
+        icone coracao
+        espacador 24
+
+        titulo {
+            texto "Pronto para começar?"
+            tamanho 56
+            peso 700
+            alinhamento centro
+        }
+        espacador 16
+        texto {
+            "Junta-te à comunidade lusófona que está a reinventar a programação web."
+            tamanho 18
+            alinhamento centro
+        }
+
+        espacador 48
+
+        linha {
+            botao { texto "Descarregar agora" }
+            botao { texto "Ver no GitHub" }
+        }
+
+        espacador 40
+
+        lista {
+            item "Grátis para sempre"
+            item "Sem conta necessária"
+            item "Código aberto (MIT)"
+        }
+    }
+
+    divisor
+
+    # ════════════════════════════════════════════════════
+    # RODAPÉ
+    # ════════════════════════════════════════════════════
+    secao Rodape {
+        padding 48
+
+        linha {
+            coluna {
+                titulo {
+                    texto "portugol.js"
+                    tamanho 18
+                    peso 700
+                }
+                espacador 8
+                texto {
+                    "A linguagem web em português."
+                    tamanho 14
+                }
+            }
+            coluna {
+                subtitulo {
+                    texto "Produto"
+                    tamanho 14
+                    peso 600
+                }
+                espacador 12
+                ligacao { texto "Documentação" para "#docs" }
+                ligacao { texto "Exemplos" para "#exemplos" }
+                ligacao { texto "Changelog" para "#changelog" }
+            }
+            coluna {
+                subtitulo {
+                    texto "Comunidade"
+                    tamanho 14
+                    peso 600
+                }
+                espacador 12
+                ligacao { texto "GitHub" para "https://github.com" }
+                ligacao { texto "Discord" para "https://discord.com" }
+                ligacao { texto "Twitter" para "https://twitter.com" }
+            }
+            coluna {
+                subtitulo {
+                    texto "Legal"
+                    tamanho 14
+                    peso 600
+                }
+                espacador 12
+                ligacao { texto "MIT License" para "#license" }
+                ligacao { texto "Privacidade" para "#privacidade" }
+            }
+        }
+
+        espacador 40
+        divisor
+        espacador 24
+
+        linha {
+            texto {
+                "© 2026 Portugol.js — Criado por Eketiandro Gonçalo"
+                tamanho 14
+            }
+            icone coracao
+            texto {
+                "Feito para a comunidade lusófona"
+                tamanho 14
+            }
+        }
+    }
+
+}

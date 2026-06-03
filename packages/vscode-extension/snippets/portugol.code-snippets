@@ -1,0 +1,365 @@
+{
+  "Página completa": {
+    "prefix": ["pagina", "pag"],
+    "body": [
+      "pagina ${1:Nome} {",
+      "",
+      "    secao ${2:Hero} {",
+      "        centralizar",
+      "        padding 80",
+      "",
+      "        titulo \"${3:Título da Página}\"",
+      "        texto \"${4:Descrição da página.}\"",
+      "",
+      "        botao { texto \"${5:Começar}\" }",
+      "    }",
+      "",
+      "}"
+    ],
+    "description": "Criar uma página completa com secção hero"
+  },
+
+  "Secção": {
+    "prefix": ["secao", "sec"],
+    "body": [
+      "secao ${1:Nome} {",
+      "    ${2:centralizar}",
+      "    padding ${3:80}",
+      "",
+      "    $0",
+      "}"
+    ],
+    "description": "Criar uma secção"
+  },
+
+  "Título": {
+    "prefix": ["titulo", "tit"],
+    "body": [
+      "titulo {",
+      "    texto \"${1:Título}\"",
+      "    tamanho ${2:48}",
+      "    peso ${3:700}",
+      "}"
+    ],
+    "description": "Título com estilos"
+  },
+
+  "Título inline": {
+    "prefix": "titi",
+    "body": ["titulo \"${1:Título}\""],
+    "description": "Título simples inline"
+  },
+
+  "Subtítulo": {
+    "prefix": ["subtitulo", "sub"],
+    "body": ["subtitulo \"${1:Subtítulo}\""],
+    "description": "Criar subtítulo (h2)"
+  },
+
+  "Texto": {
+    "prefix": "texto",
+    "body": ["texto \"${1:Conteúdo do texto.}\""],
+    "description": "Parágrafo de texto"
+  },
+
+  "Botão": {
+    "prefix": ["botao", "bot"],
+    "body": [
+      "botao {",
+      "    texto \"${1:Clica aqui}\"",
+      "}"
+    ],
+    "description": "Criar um botão"
+  },
+
+  "Ligação": {
+    "prefix": ["ligacao", "lig"],
+    "body": [
+      "ligacao {",
+      "    texto \"${1:Ver mais}\"",
+      "    para \"${2:https://}\"",
+      "}"
+    ],
+    "description": "Criar um link"
+  },
+
+  "Ícone": {
+    "prefix": ["icone", "ico"],
+    "body": ["icone ${1|foguete,codigo,terminal,relampago,escudo,globo,pacote,relogio,grafico,livro,lampada,pesquisar,utilizador,verificar,erro,aviso,estrela,coracao,github,mail,seta_direita,casa,menu,fechar|}"],
+    "description": "Inserir ícone Lucide em português"
+  },
+
+  "Distintivo": {
+    "prefix": ["distintivo", "dis"],
+    "body": ["distintivo \"${1:Novo}\""],
+    "description": "Badge/tag distintivo"
+  },
+
+  "Divisor": {
+    "prefix": "divisor",
+    "body": ["divisor"],
+    "description": "Linha divisória horizontal"
+  },
+
+  "Cartão": {
+    "prefix": ["cartao", "car"],
+    "body": [
+      "cartao {",
+      "    icone ${1:relampago}",
+      "    espacador 12",
+      "    subtitulo \"${2:Título}\"",
+      "    espacador 8",
+      "    texto \"${3:Descrição do cartão.}\"",
+      "}"
+    ],
+    "description": "Criar cartão com ícone"
+  },
+
+  "Grade 3 colunas": {
+    "prefix": ["grade3", "g3"],
+    "body": [
+      "grade 3 {",
+      "    cartao {",
+      "        subtitulo \"${1:Título 1}\"",
+      "        texto \"${2:Descrição.}\"",
+      "    }",
+      "    cartao {",
+      "        subtitulo \"${3:Título 2}\"",
+      "        texto \"${4:Descrição.}\"",
+      "    }",
+      "    cartao {",
+      "        subtitulo \"${5:Título 3}\"",
+      "        texto \"${6:Descrição.}\"",
+      "    }",
+      "}"
+    ],
+    "description": "Grade de 3 cartões"
+  },
+
+  "Grade 2 colunas": {
+    "prefix": ["grade2", "g2"],
+    "body": [
+      "grade 2 {",
+      "    $1",
+      "}"
+    ],
+    "description": "Grade de 2 colunas"
+  },
+
+  "Linha": {
+    "prefix": "linha",
+    "body": [
+      "linha {",
+      "    $1",
+      "}"
+    ],
+    "description": "Layout em linha (flexbox horizontal)"
+  },
+
+  "Coluna": {
+    "prefix": "coluna",
+    "body": [
+      "coluna {",
+      "    $1",
+      "}"
+    ],
+    "description": "Layout em coluna (flexbox vertical)"
+  },
+
+  "Espaçador": {
+    "prefix": ["espacador", "esp"],
+    "body": ["espacador ${1:24}"],
+    "description": "Espaço vertical"
+  },
+
+  "Imagem": {
+    "prefix": ["imagem", "img"],
+    "body": [
+      "imagem {",
+      "    origem \"${1:/imagem.png}\"",
+      "    largura ${2:100%}",
+      "}"
+    ],
+    "description": "Inserir imagem"
+  },
+
+  "Vídeo": {
+    "prefix": "video",
+    "body": [
+      "video {",
+      "    origem \"${1:https://youtube.com/watch?v=}\"",
+      "}"
+    ],
+    "description": "Embed de vídeo YouTube/Vimeo"
+  },
+
+  "Lista": {
+    "prefix": "lista",
+    "body": [
+      "lista {",
+      "    item \"${1:Primeiro item}\"",
+      "    item \"${2:Segundo item}\"",
+      "    item \"${3:Terceiro item}\"",
+      "}"
+    ],
+    "description": "Lista de itens"
+  },
+
+  "Citação": {
+    "prefix": "citacao",
+    "body": [
+      "citacao {",
+      "    texto \"${1:A citação vai aqui.}\"",
+      "    autor \"${2:Nome do Autor}\"",
+      "}"
+    ],
+    "description": "Bloco de citação com autor"
+  },
+
+  "Entrada": {
+    "prefix": ["entrada", "ent"],
+    "body": ["entrada ${1|email,texto,numero,senha,telefone,data|}"],
+    "description": "Campo de input"
+  },
+
+  "Função": {
+    "prefix": ["funcao", "fun"],
+    "body": [
+      "funcao ${1:nome}(${2:parametro}) {",
+      "    retornar ${3:resultado}",
+      "}"
+    ],
+    "description": "Definir uma função"
+  },
+
+  "Condicional": {
+    "prefix": "se",
+    "body": [
+      "se ${1:condicao} {",
+      "    $2",
+      "} senao {",
+      "    $3",
+      "}"
+    ],
+    "description": "Bloco se/senao"
+  },
+
+  "Ciclo para cada": {
+    "prefix": ["para", "foreach"],
+    "body": [
+      "para cada ${1:item} em ${2:lista} {",
+      "    $3",
+      "}"
+    ],
+    "description": "Ciclo para cada item em lista"
+  },
+
+  "Modelo de dados": {
+    "prefix": ["modelo", "mod"],
+    "body": [
+      "modelo ${1:Nome} {",
+      "    ${2:nome} texto",
+      "    ${3:email} texto unico",
+      "    ${4:criado} data",
+      "}"
+    ],
+    "description": "Modelo de base de dados (Prisma)"
+  },
+
+  "Rota API": {
+    "prefix": ["rota", "rot"],
+    "body": [
+      "rota \"${1:/api/recurso}\" {",
+      "    obter {",
+      "        retornar ${2:dados}",
+      "    }",
+      "    criar {",
+      "        retornar ${3:novo}",
+      "    }",
+      "}"
+    ],
+    "description": "Rota de API REST"
+  },
+
+  "Landing Page completa": {
+    "prefix": "landing",
+    "body": [
+      "pagina ${1:Inicio} {",
+      "",
+      "    secao Hero {",
+      "        centralizar",
+      "        padding 120",
+      "",
+      "        distintivo \"${2:Novidade}\"",
+      "        espacador 24",
+      "",
+      "        titulo {",
+      "            texto \"${3:O teu produto}\"",
+      "            tamanho 72",
+      "            peso 700",
+      "            alinhamento centro",
+      "        }",
+      "",
+      "        espacador 16",
+      "",
+      "        texto {",
+      "            \"${4:A descrição do teu produto vai aqui.}\"",
+      "            alinhamento centro",
+      "        }",
+      "",
+      "        espacador 40",
+      "",
+      "        linha {",
+      "            botao { texto \"${5:Começar agora}\" }",
+      "            ligacao { texto \"${6:Saber mais →}\" para \"${7:#}\" }",
+      "        }",
+      "    }",
+      "",
+      "    divisor",
+      "",
+      "    secao Funcionalidades {",
+      "        padding 80",
+      "",
+      "        coluna {",
+      "            centralizar",
+      "            titulo \"${8:Funcionalidades}\"",
+      "        }",
+      "",
+      "        espacador 48",
+      "",
+      "        grade 3 {",
+      "            cartao {",
+      "                icone relampago",
+      "                espacador 12",
+      "                subtitulo \"${9:Rápido}\"",
+      "                texto \"${10:Descrição da funcionalidade.}\"",
+      "            }",
+      "            cartao {",
+      "                icone escudo",
+      "                espacador 12",
+      "                subtitulo \"${11:Seguro}\"",
+      "                texto \"${12:Descrição da funcionalidade.}\"",
+      "            }",
+      "            cartao {",
+      "                icone foguete",
+      "                espacador 12",
+      "                subtitulo \"${13:Poderoso}\"",
+      "                texto \"${14:Descrição da funcionalidade.}\"",
+      "            }",
+      "        }",
+      "    }",
+      "",
+      "    divisor",
+      "",
+      "    secao Rodape {",
+      "        centralizar",
+      "        padding 40",
+      "",
+      "        texto \"© 2026 ${1:Inicio}\"",
+      "    }",
+      "",
+      "}"
+    ],
+    "description": "Landing page completa com hero, funcionalidades e rodapé"
+  }
+}

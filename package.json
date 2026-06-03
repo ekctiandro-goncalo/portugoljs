@@ -1,0 +1,10 @@
+{
+  "name": "portugol",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/vscode": "^1.85.0"
+  }
+}

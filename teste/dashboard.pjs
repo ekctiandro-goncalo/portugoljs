@@ -1,0 +1,27 @@
+pagina Dashboard {
+    titulo "Painel de Controlo"
+    texto "Bem-vindo, " + nome
+}
+
+funcao verificarAcesso(idade, admin) {
+    se idade >= 18 e admin ou owner {
+        retornar "Acesso permitido"
+    } senao {
+        retornar "Acesso negado"
+    }
+}
+
+se nao logado {
+    texto "Por favor faça login"
+}
+
+modelo Produto {
+    nome texto
+    preco decimal
+    activo booleano
+}
+
+rota "/api/produtos" {
+    obter { }
+    criar { }
+}

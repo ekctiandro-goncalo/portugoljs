@@ -1,0 +1,8 @@
+export { lexer } from "./lexer.js"
+export { parser, ErroParser } from "./parser.js"
+export { gerarReact, gerarPaginaNext, gerarPaginaLoader } from "./generator/react.js"
+export { gerarHTML, resolverIcone } from "./generator/html.js"
+export type { SaidaHTML } from "./generator/html.js"
+export type { Token, TokenType } from "./token.js"
+export type { No, Campo, MetodoRota, Expressao, Estilos } from "./ast.js"
+export { PROPRIEDADES_ESTILO } from "./ast.js"

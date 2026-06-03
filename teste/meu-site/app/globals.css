@@ -1,0 +1,241 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Fontes Google ─── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* ═══════════════════════════════════════════════════
+   Portugol.js — Classes de Componentes
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Tema ─── */
+:root {
+  --cor-fundo: #ffffff;
+  --cor-texto: #111111;
+  --cor-texto-secundario: #555555;
+  --cor-borda: #e5e5e5;
+  --cor-superficie: #f8f8f8;
+  --cor-acento: #111111;
+  --fonte-titulo: 'Cormorant Garamond', Georgia, serif;
+  --fonte-texto: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --raio-base: 12px;
+  --sombra-cartao: 0 1px 3px rgba(0,0,0,0.06), 0 6px 16px rgba(0,0,0,0.04);
+  --sombra-cartao-hover: 0 4px 12px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+  --transicao: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --largura-max: 1200px;
+}
+
+/* ─── Base ─── */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--fonte-texto);
+  color: var(--cor-texto);
+  background-color: var(--cor-fundo);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ─── Secção ─── */
+.secao {
+  max-width: var(--largura-max);
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+/* ─── Tipografia ─── */
+.titulo {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--cor-texto);
+  margin-bottom: 16px;
+}
+
+.texto {
+  font-family: var(--fonte-texto);
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--cor-texto-secundario);
+  margin-bottom: 8px;
+}
+
+/* ─── Botão ─── */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 32px;
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  background: var(--cor-acento);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transicao);
+  letter-spacing: 0.01em;
+}
+
+.botao:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  opacity: 0.92;
+}
+
+.botao:active {
+  transform: translateY(0);
+}
+
+/* ─── Entrada ─── */
+.entrada {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: 14px 18px;
+  font-family: var(--fonte-texto);
+  font-size: 1rem;
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  transition: border-color var(--transicao);
+  outline: none;
+}
+
+.entrada:focus {
+  border-color: var(--cor-acento);
+}
+
+/* ─── Imagem ─── */
+.imagem {
+  width: 100%;
+  height: auto;
+  border-radius: var(--raio-base);
+  object-fit: cover;
+}
+
+/* ─── Layout: Linha ─── */
+.linha {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ─── Layout: Coluna ─── */
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Layout: Grade ─── */
+.grade {
+  display: grid;
+  gap: 24px;
+}
+
+.grade-1 { grid-template-columns: 1fr; }
+.grade-2 { grid-template-columns: repeat(2, 1fr); }
+.grade-3 { grid-template-columns: repeat(3, 1fr); }
+.grade-4 { grid-template-columns: repeat(4, 1fr); }
+.grade-5 { grid-template-columns: repeat(5, 1fr); }
+.grade-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* ─── Cartão ─── */
+.cartao {
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-base);
+  padding: 32px;
+  transition: all var(--transicao);
+  box-shadow: var(--sombra-cartao);
+}
+
+.cartao:hover {
+  box-shadow: var(--sombra-cartao-hover);
+  transform: translateY(-4px);
+}
+
+.cartao .imagem {
+  margin: -32px -32px 24px -32px;
+  width: calc(100% + 64px);
+  border-radius: var(--raio-base) var(--raio-base) 0 0;
+}
+
+.cartao .titulo {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.cartao .texto {
+  font-size: 1rem;
+}
+
+/* ─── Espaçador ─── */
+.espacador {
+  flex-shrink: 0;
+}
+
+/* ─── Responsividade ─── */
+@media (max-width: 768px) {
+  .secao {
+    padding: 48px 20px;
+  }
+
+  .titulo {
+    font-size: clamp(2rem, 8vw, 2.5rem);
+  }
+
+  .texto {
+    font-size: 1rem;
+  }
+
+  .linha {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .grade-2,
+  .grade-3,
+  .grade-4,
+  .grade-5,
+  .grade-6 {
+    grid-template-columns: 1fr;
+  }
+
+  .cartao {
+    padding: 24px;
+  }
+
+  .cartao .imagem {
+    margin: -24px -24px 20px -24px;
+    width: calc(100% + 48px);
+  }
+
+  .botao {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .secao {
+    padding: 32px 16px;
+  }
+}

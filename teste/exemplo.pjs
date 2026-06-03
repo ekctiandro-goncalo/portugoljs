@@ -1,0 +1,184 @@
+pagina Inicio {
+
+    # ─── HERO ───────────────────────────────────────────
+    secao Hero {
+        centralizar
+        padding 120
+
+        distintivo "v1.0 — Agora disponível"
+
+        espacador 24
+
+        titulo {
+            texto "Portugol.js"
+            tamanho 88
+            peso 700
+        }
+
+        espacador 16
+
+        subtitulo {
+            texto "A primeira linguagem web em português"
+            tamanho 24
+        }
+
+        espacador 12
+
+        texto {
+            "Escreves em português. Ela compila para React."
+            tamanho 18
+            alinhamento centro
+        }
+
+        espacador 40
+
+        linha {
+            botao { texto "🚀 Começar Agora" }
+            ligacao {
+                texto "Ver documentação →"
+                para "https://github.com"
+            }
+        }
+    }
+
+    divisor
+
+    # ─── O QUE É ─────────────────────────────────────────
+    secao OQueE {
+        padding 80
+
+        citacao {
+            texto "Programação não devia ter barreiras de idioma. O Portugol.js existe para isso."
+            autor "Criador do Portugol.js"
+        }
+    }
+
+    divisor
+
+    # ─── COMPONENTES ─────────────────────────────────────
+    secao Componentes {
+        titulo "Componentes disponíveis"
+
+        espacador 16
+
+        subtitulo "Tudo o que precisas para construir"
+
+        espacador 40
+
+        grade 3 {
+            cartao {
+                icone "📝"
+                espacador 12
+                titulo "Texto & Títulos"
+                texto "titulo, subtitulo, texto — com tamanho, peso e alinhamento."
+            }
+            cartao {
+                icone "🧱"
+                espacador 12
+                titulo "Layouts"
+                texto "linha, coluna, grade e secao — organiza tudo como queres."
+            }
+            cartao {
+                icone "🃏"
+                espacador 12
+                titulo "Cartões"
+                texto "cartao — com sombra, hover animado e bordas arredondadas."
+            }
+            cartao {
+                icone "🔘"
+                espacador 12
+                titulo "Botões & Ligações"
+                texto "botao e ligacao — para acções e navegação."
+            }
+            cartao {
+                icone "🏷️"
+                espacador 12
+                titulo "Distintivos"
+                texto "distintivo — badges e tags para destacar conteúdo."
+            }
+            cartao {
+                icone "📋"
+                espacador 12
+                titulo "Listas"
+                texto "lista com itens — cada um com seta automática."
+            }
+        }
+    }
+
+    espacador 60
+
+    # ─── LISTA DE FUNCIONALIDADES ─────────────────────────
+    secao Funcionalidades {
+        linha {
+            coluna {
+                subtitulo "Porquê Portugol.js?"
+                espacador 24
+                lista {
+                    item "Sintaxe 100% em português"
+                    item "Compila para React sem configuração"
+                    item "Servidor de desenvolvimento com live reload"
+                    item "Gera HTML estático ou projecto Next.js"
+                    item "CSS premium gerado automaticamente"
+                    item "Funciona com qualquer editor de texto"
+                }
+            }
+            coluna {
+                subtitulo "Como funciona?"
+                espacador 24
+                lista {
+                    item "Escreves um ficheiro .pjs"
+                    item "Corres: portugol iniciar pagina.pjs"
+                    item "Abre o browser em localhost:3000"
+                    item "Guardas o ficheiro → browser actualiza"
+                    item "Pronto. A tua página está no ar."
+                }
+                espacador 24
+                botao { texto "Ver exemplo no GitHub" }
+            }
+        }
+    }
+
+    espacador 60
+
+    # ─── FORMULÁRIO ──────────────────────────────────────
+    secao Contacto {
+        centralizar
+        padding 80
+
+        distintivo "Contacto"
+        espacador 20
+
+        titulo "Fala connosco"
+        espacador 8
+        texto "Tens perguntas? Envia-nos uma mensagem."
+        espacador 32
+
+        coluna {
+            entrada texto
+            entrada email
+            entrada numero
+            botao { texto "Enviar Mensagem" }
+        }
+    }
+
+    divisor
+
+    # ─── RODAPÉ ──────────────────────────────────────────
+    secao Rodape {
+        centralizar
+        padding 48
+
+        icone "🇵🇹"
+        espacador 12
+        texto "Feito com amor para a comunidade lusófona"
+        espacador 16
+        linha {
+            ligacao { texto "GitHub" para "https://github.com" }
+            ligacao { texto "Documentação" para "https://github.com" }
+            ligacao { texto "MIT License" para "https://github.com" }
+        }
+        espacador 16
+        texto "© 2026 Portugol.js"
+    }
+
+}

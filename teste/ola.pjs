@@ -1,0 +1,6 @@
+pagina Ola {
+    titulo "Portugol a funcionar!"
+    texto "Isto é um teste."
+    botao { texto "Clica" }
+    entrada email
+}

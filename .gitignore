@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.tgz
+*.vsix
+.next/
+tmp-publish/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local

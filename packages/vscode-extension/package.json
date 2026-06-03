@@ -1,0 +1,152 @@
+{
+  "name": "portugol-lang",
+  "displayName": "Portugol.js",
+  "description": "Linguagem de programação web em português — syntax highlighting, autocomplete e snippets para ficheiros .pjs",
+  "version": "0.2.0",
+  "publisher": "eketiandrgoncalo",
+  "author": {
+    "name": "Eketiandro Gonçalo"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EketiandrGoncalo/portugol"
+  },
+  "homepage": "https://github.com/EketiandrGoncalo/portugol",
+  "bugs": {
+    "url": "https://github.com/EketiandrGoncalo/portugol/issues"
+  },
+  "keywords": [
+    "portugol",
+    "português",
+    "portuguese",
+    "pjs",
+    "react",
+    "nextjs",
+    "web",
+    "lusofono"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Formatters"
+  ],
+  "activationEvents": [
+    "onLanguage:portugol"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "portugol",
+        "aliases": [
+          "Portugol",
+          "portugol",
+          "PJS",
+          "pjs"
+        ],
+        "extensions": [
+          ".pjs"
+        ],
+        "configuration": "./language-configuration/language-configuration.json",
+        "icon": {
+          "light": "./icons/pjs-light.svg",
+          "dark": "./icons/pjs-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "portugol",
+        "scopeName": "source.portugol",
+        "path": "./syntaxes/portugol.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "portugol",
+        "path": "./snippets/portugol.code-snippets"
+      }
+    ],
+    "commands": [
+      {
+        "command": "portugol.iniciar",
+        "title": "Portugol: Iniciar servidor de desenvolvimento",
+        "icon": "$(play)"
+      },
+      {
+        "command": "portugol.construir",
+        "title": "Portugol: Construir para HTML",
+        "icon": "$(package)"
+      },
+      {
+        "command": "portugol.previsualizar",
+        "title": "Portugol: Pré-visualizar no browser",
+        "icon": "$(browser)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "portugol.iniciar",
+          "when": "resourceExtname == .pjs",
+          "group": "navigation"
+        },
+        {
+          "command": "portugol.construir",
+          "when": "resourceExtname == .pjs",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "portugol.iniciar",
+          "when": "resourceExtname == .pjs",
+          "group": "portugol"
+        },
+        {
+          "command": "portugol.construir",
+          "when": "resourceExtname == .pjs",
+          "group": "portugol"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Portugol.js",
+      "properties": {
+        "portugol.portaServidor": {
+          "type": "number",
+          "default": 3000,
+          "description": "Porta do servidor de desenvolvimento"
+        },
+        "portugol.abrirBrowserAutomaticamente": {
+          "type": "boolean",
+          "default": true,
+          "description": "Abrir browser automaticamente ao iniciar o servidor"
+        },
+        "portugol.directorioSaida": {
+          "type": "string",
+          "default": "dist",
+          "description": "Directório de saída para ficheiros HTML compilados"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "dev": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --watch",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.5.0"
+  }
+}
