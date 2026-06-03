@@ -1,4 +1,4 @@
-import withPortugol from "@portugol/compiler/next"
+import withPortugol from "@porttugol/compiler/next"
 
 export default withPortugol({
   // outras configs Next.js aqui
