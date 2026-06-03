@@ -1,6 +1,6 @@
 {
   "name": "@porttugol/cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "CLI do Portugol.js — cria, compila e serve páginas web em português",
   "author": {
     "name": "Eketiandro Gonçalo"
@@ -30,7 +30,7 @@
     "start": "tsx src/index.ts"
   },
   "dependencies": {
-    "@porttugol/compiler": "0.1.0",
+    "@porttugol/compiler": "^0.1.0",
     "commander": "^12.0.0",
     "chalk": "^5.3.0"
   },

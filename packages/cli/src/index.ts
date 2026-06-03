@@ -151,7 +151,7 @@ program
             next: "^14.2.0",
             react: "^18.3.0",
             "react-dom": "^18.3.0",
-            "@portugol/compiler": "file:../../packages/compiler",
+            "@porttugol/compiler": "file:../../packages/compiler",
           },
           devDependencies: {
             typescript: "^5.5.0",
@@ -174,7 +174,7 @@ program
     writeFileSync(
       join(dirSaida, "next.config.mjs"),
       [
-        'import withPortugol from "@portugol/compiler/next"',
+        'import withPortugol from "@porttugol/compiler/next"',
         "",
         "export default withPortugol({",
         "  // outras configs Next.js aqui",
