@@ -104,4 +104,46 @@ describe("Code Generator - React", () => {
     expect(resultado).toContain("rounded-xl")
     expect(resultado).toContain("shadow-md")
   })
+
+  // ─── Novas estruturas de controlo ───
+
+  it("gera senao se (else if)", () => {
+    const resultado = compilar('se a > 0 { texto "Pos" } senao se a < 0 { texto "Neg" } senao { texto "Zero" }')
+    expect(resultado).toContain("if (a > 0)")
+    expect(resultado).toContain("else if (a < 0)")
+    expect(resultado).toContain("else {")
+  })
+
+  it("gera enquanto", () => {
+    const resultado = compilar('enquanto verdadeiro { texto "Loop" }')
+    expect(resultado).toContain("while (true)")
+  })
+
+  it("gera escolher/caso/padrao", () => {
+    const resultado = compilar('escolher (x) { caso 1 { texto "Um" } padrao { texto "Outro" } }')
+    expect(resultado).toContain("switch (x)")
+    expect(resultado).toContain("case 1:")
+    expect(resultado).toContain("break")
+    expect(resultado).toContain("default:")
+  })
+
+  it("gera para numerico", () => {
+    const resultado = compilar('para i = 0 ate 10 { texto "Loop" }')
+    expect(resultado).toContain("for (let i = 0; i <= 10; i += 1)")
+  })
+
+  it("gera para numerico com passo", () => {
+    const resultado = compilar('para i = 0 ate 10 passo 2 { texto "Loop" }')
+    expect(resultado).toContain("for (let i = 0; i <= 10; i += 2)")
+  })
+
+  it("gera declaracao de variavel", () => {
+    const resultado = compilar('var nome = "Joao"')
+    expect(resultado).toContain('let nome = "Joao"')
+  })
+
+  it("gera atribuicao", () => {
+    const resultado = compilar('funcao teste() { x = 42 }')
+    expect(resultado).toContain("x = 42")
+  })
 })

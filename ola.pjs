@@ -1,0 +1,77 @@
+pagina Inicio {
+
+    secao Hero {
+        centralizar
+        padding 100
+
+        distintivo "Portugol.js"
+
+        espacador 24
+
+        titulo {
+            texto "Ola Mundo!"
+            tamanho 72
+            peso 700
+            alinhamento centro
+        }
+
+        espacador 16
+
+        texto {
+            "A primeira linguagem web em portugues."
+            alinhamento centro
+            tamanho 20
+        }
+
+        espacador 40
+
+        linha {
+            botao { texto "Comecar agora" }
+            ligacao { texto "Ver mais" para "#sobre" }
+        }
+    }
+
+    divisor
+
+    secao Sobre {
+        titulo "O que consegues fazer"
+        espacador 40
+
+        grade 3 {
+            cartao {
+                icone foguete
+                espacador 12
+                subtitulo "Rapido"
+                texto "Do ficheiro .pjs ao browser em segundos."
+            }
+            cartao {
+                icone codigo
+                espacador 12
+                subtitulo "Simples"
+                texto "Sintaxe em portugues. Sem ingles."
+            }
+            cartao {
+                icone coracao
+                espacador 12
+                subtitulo "Para todos"
+                texto "Feito para a comunidade lusofona."
+            }
+        }
+    }
+
+    divisor
+
+    secao Rodape {
+        centralizar
+        padding 40
+
+        linha {
+            icone coracao
+            texto {
+                "Feito por Ekctiandro Goncalo"
+                tamanho 40
+            }
+        }
+    }
+
+}

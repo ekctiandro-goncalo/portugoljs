@@ -36,6 +36,14 @@ const PALAVRAS_RESERVADAS: Record<string, TokenType> = {
   lista: "LISTA",
   item: "ITEM",
   citacao: "CITACAO",
+  // Novas estruturas de controlo
+  enquanto: "ENQUANTO",
+  escolher: "ESCOLHER",
+  caso: "CASO",
+  padrao: "PADRAO",
+  ate: "ATE",
+  passo: "PASSO",
+  var: "VAR",
   // Operadores lógicos
   e: "AND",
   ou: "OR",
@@ -46,6 +54,13 @@ const PALAVRAS_RESERVADAS: Record<string, TokenType> = {
 
 export function lexer(entrada: string): Token[] {
   const tokens: Token[] = []
+
+  // Ignorar BOM (UTF-8 \uFEFF ou UTF-16 corrompido) no início
+  if (entrada.charCodeAt(0) === 0xFEFF || entrada.charCodeAt(0) === 0xFFFD) {
+    entrada = entrada.slice(1)
+  }
+  // Ignorar bytes nulos (UTF-16 LE sem conversão)
+  entrada = entrada.replace(/\x00/g, '')
 
   let i = 0
   let linha = 1

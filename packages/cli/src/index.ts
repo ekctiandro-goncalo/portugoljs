@@ -469,7 +469,7 @@ program
     // ─── Compilar ───
     function compilar(): { html: string; css: string } | null {
       try {
-        const codigo = readFileSync(caminho, "utf-8")
+        const codigo = readFileSync(caminho, "utf-8").replace(/^\uFEFF/, '').replace(/\x00/g, '')
         const tokens = lexer(codigo)
         const ast = parser(tokens)
         const saida = gerarHTML(ast)

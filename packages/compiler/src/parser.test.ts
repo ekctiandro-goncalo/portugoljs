@@ -63,6 +63,91 @@ describe("Parser Portugol", () => {
     expect(pc.corpo).toHaveLength(1)
   })
 
+  // ─── Novas estruturas de controlo ───
+
+  it("parseia senao se (else if)", () => {
+    const ast = parse('se a > 0 { titulo "Pos" } senao se a < 0 { titulo "Neg" } senao { titulo "Zero" }')
+    expect(ast[0].tipo).toBe("Se")
+    const se = ast[0] as any
+    expect(se.senaoSe).toHaveLength(1)
+    expect(se.senao).toHaveLength(1)
+  })
+
+  it("parseia senao se sem senao final", () => {
+    const ast = parse('se a > 0 { titulo "Pos" } senao se a < 0 { titulo "Neg" }')
+    expect(ast[0].tipo).toBe("Se")
+    const se = ast[0] as any
+    expect(se.senaoSe).toHaveLength(1)
+    expect(se.senao).toHaveLength(0)
+  })
+
+  it("parseia enquanto", () => {
+    const ast = parse('enquanto verdadeiro { texto "Loop" }')
+    expect(ast[0].tipo).toBe("Enquanto")
+    const enq = ast[0] as any
+    expect(enq.condicao).toMatchObject({ tipo: "Bool", valor: true })
+    expect(enq.corpo).toHaveLength(1)
+  })
+
+  it("parseia escolher com casos e padrao", () => {
+    const ast = parse('escolher (x) { caso 1 { texto "Um" } caso 2 { texto "Dois" } padrao { texto "Outro" } }')
+    expect(ast[0].tipo).toBe("Escolher")
+    const esc = ast[0] as any
+    expect(esc.expr).toMatchObject({ tipo: "Ident", nome: "x" })
+    expect(esc.casos).toHaveLength(2)
+    expect(esc.casos[0].valor).toMatchObject({ tipo: "Num", valor: "1" })
+    expect(esc.casos[1].valor).toMatchObject({ tipo: "Num", valor: "2" })
+    expect(esc.padrao).toHaveLength(1)
+  })
+
+  it("parseia para numerico simples", () => {
+    const ast = parse('para i = 0 ate 10 { texto "Loop" }')
+    expect(ast[0].tipo).toBe("Para")
+    const p = ast[0] as any
+    expect(p.variavel).toBe("i")
+    expect(p.inicio).toMatchObject({ tipo: "Num", valor: "0" })
+    expect(p.ate).toMatchObject({ tipo: "Num", valor: "10" })
+    expect(p.corpo).toHaveLength(1)
+  })
+
+  it("parseia para numerico com passo", () => {
+    const ast = parse('para i = 0 ate 10 passo 2 { texto "Loop" }')
+    expect(ast[0].tipo).toBe("Para")
+    const p = ast[0] as any
+    expect(p.variavel).toBe("i")
+    expect(p.passo).toMatchObject({ tipo: "Num", valor: "2" })
+  })
+
+  it("parseia declaracao de variavel", () => {
+    const ast = parse('var nome = "Joao"')
+    expect(ast[0].tipo).toBe("Variavel")
+    const v = ast[0] as any
+    expect(v.nome).toBe("nome")
+    expect(v.valor).toMatchObject({ tipo: "Str", valor: "Joao" })
+  })
+
+  it("parseia declaracao de variavel sem valor", () => {
+    const ast = parse('var x')
+    expect(ast[0].tipo).toBe("Variavel")
+    const v = ast[0] as any
+    expect(v.nome).toBe("x")
+    expect(v.valor).toBeUndefined()
+  })
+
+  it("parseia atribuicao", () => {
+    const ast = parse('funcao teste() { x = 42 }')
+    const func = (ast[0] as any)
+    expect(func.corpo[0].tipo).toBe("Atribuir")
+    expect(func.corpo[0].nome).toBe("x")
+    expect(func.corpo[0].valor).toMatchObject({ tipo: "Num", valor: "42" })
+  })
+
+  it("parseia 'item' como variavel em para cada", () => {
+    const ast = parse('para cada item em lista { titulo item }')
+    expect(ast[0].tipo).toBe("ParaCada")
+    expect((ast[0] as any).variavel).toBe("item")
+  })
+
   it("parseia modelo com campos", () => {
     const ast = parse("modelo Utilizador { nome texto unico email texto }")
     expect(ast[0].tipo).toBe("Modelo")

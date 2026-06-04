@@ -1,0 +1,87 @@
+pagina DemonstracaoLogica {
+
+    # ══════════════════════════════════════════════
+    # VARIAVEIS
+    # ══════════════════════════════════════════════
+    var contador = 0
+    var nome = "Portugol"
+    var ativo = verdadeiro
+
+    # ══════════════════════════════════════════════
+    # FUNCAO
+    # ══════════════════════════════════════════════
+    funcao saudacao(nome) {
+        retornar "Ola " + nome
+    }
+
+    # ══════════════════════════════════════════════
+    # SE / SENAO SE / SENAO
+    # ══════════════════════════════════════════════
+    titulo "Estruturas Condicionais"
+
+    se idade >= 18 {
+        texto "Maior de idade"
+    } senao se idade >= 13 {
+        texto "Adolescente"
+    } senao {
+        texto "Crianca"
+    }
+
+    se logado e admin {
+        texto "Acesso total"
+    }
+
+    se nao logado {
+        texto "Por favor faca login"
+    }
+
+    # ══════════════════════════════════════════════
+    # ESCOLHER / CASO / PADRAO  (switch)
+    # ══════════════════════════════════════════════
+    titulo "Escolher (Switch)"
+
+    escolher (dia) {
+        caso 1 { texto "Segunda" }
+        caso 2 { texto "Terca" }
+        caso 3 { texto "Quarta" }
+        caso 4 { texto "Quinta" }
+        caso 5 { texto "Sexta" }
+        padrao { texto "Fim de semana" }
+    }
+
+    # ══════════════════════════════════════════════
+    # ENQUANTO  (while)
+    # ══════════════════════════════════════════════
+    titulo "Loop Enquanto"
+
+    enquanto contador < 5 {
+        texto "Contagem: " + contador
+        contador = contador + 1
+    }
+
+    # ══════════════════════════════════════════════
+    # PARA (for numerico)
+    # ══════════════════════════════════════════════
+    titulo "Loop Para Numerico"
+
+    para i = 0 ate 10 {
+        texto "Numero: " + i
+    }
+
+    para i = 0 ate 10 passo 2 {
+        texto "Par: " + i
+    }
+
+    # ══════════════════════════════════════════════
+    # PARA CADA (forEach)
+    # ══════════════════════════════════════════════
+    titulo "Loop Para Cada"
+
+    para cada item em lista {
+        texto "Item: " + item
+    }
+
+    para cada produto em carrinho {
+        texto "Produto: " + produto
+    }
+}

@@ -149,9 +149,9 @@ describe("Gerador HTML", () => {
 
   it("gera CSS com variáveis de tema neutro", () => {
     const { css } = compilar('pagina Inicio { titulo "X" }')
-    expect(css).toContain("--cor-fundo: #ffffff")
-    expect(css).toContain("--cor-texto: #111111")
-    expect(css).toContain("--cor-borda: #e5e5e5")
+    expect(css).toContain("--fundo:           #ffffff")
+    expect(css).toContain("--texto:           #0a0a0a")
+    expect(css).toContain("--borda:           rgba(0,0,0,0.07)")
   })
 
   it("gera CSS com fontes Cormorant Garamond e Inter", () => {
@@ -196,5 +196,17 @@ describe("Gerador HTML", () => {
     const { html } = compilar('pagina Inicio { texto "Texto <script>" }')
     expect(html).toContain("&lt;script&gt;")
     expect(html).not.toContain("<script>")
+  })
+
+  // ─── Novas estruturas de controlo (ignoradas em HTML estático) ───
+
+  it("ignora enquanto em HTML estático", () => {
+    const { html } = compilar('enquanto verdadeiro { texto "Loop" }')
+    expect(html).toContain("Enquanto: nÃ£o suportado em HTML estÃ¡tico")
+  })
+
+  it("ignora escolher em HTML estático", () => {
+    const { html } = compilar('escolher (x) { caso 1 { texto "Um" } }')
+    expect(html).toContain("Escolher: nÃ£o suportado em HTML estÃ¡tico")
   })
 })

@@ -273,7 +273,12 @@ function gerarNoHTML(no: No, indent: number): string {
     // NÃ³s nÃ£o-visuais: ignorar no HTML
     case "Funcao":
     case "Se":
+    case "Enquanto":
+    case "Escolher":
     case "ParaCada":
+    case "Para":
+    case "Atribuir":
+    case "Variavel":
     case "Rota":
     case "Modelo":
     case "Retornar":

@@ -1,5 +1,5 @@
 import { Token } from "./token.js"
-import { No, Campo, MetodoRota, Expressao, Estilos, PROPRIEDADES_ESTILO } from "./ast.js"
+import { No, Campo, MetodoRota, Expressao, Estilos, PROPRIEDADES_ESTILO, Caso } from "./ast.js"
 
 export class ErroParser extends Error {
   constructor(
@@ -106,7 +106,13 @@ export function parser(tokens: Token[]): No[] {
       case "SE":
         return parseSe()
       case "PARA":
-        return parseParaCada()
+        return parsePara()
+      case "ENQUANTO":
+        return parseEnquanto()
+      case "ESCOLHER":
+        return parseEscolher()
+      case "VAR":
+        return parseVariavel()
       case "ROTA":
         return parseRota()
       case "MODELO":
@@ -143,6 +149,16 @@ export function parser(tokens: Token[]): No[] {
         return parseLista()
       case "CITACAO":
         return parseCitacao()
+      case "IDENT":
+        // Tenta ler como atribuição: identificador = expressão
+        if (tokens[pos + 1]?.type === "EQUALS") {
+          return parseAtribuir()
+        }
+        throw new ErroParser(
+          `Token inesperado: "${token.value}" (${token.type})`,
+          token.linha,
+          token.coluna,
+        )
       default:
         throw new ErroParser(
           `Token inesperado: "${token.value}" (${token.type})`,
@@ -324,25 +340,131 @@ export function parser(tokens: Token[]): No[] {
     const entao = parseBloco()
     consumir("RBRACE")
     let senao: No[] = []
+    const senaoSe: { condicao: Expressao; corpo: No[] }[] = []
+    while (peek().type === "SENAO" && tokens[pos + 1]?.type === "SE") {
+      consumir("SENAO")
+      consumir("SE")
+      const cond = parseExpr(0)
+      consumir("LBRACE")
+      const corpo = parseBloco()
+      consumir("RBRACE")
+      senaoSe.push({ condicao: cond, corpo })
+    }
     if (peek().type === "SENAO") {
       consumir("SENAO")
       consumir("LBRACE")
       senao = parseBloco()
       consumir("RBRACE")
     }
-    return { tipo: "Se", condicao, entao, senao }
+    const no: No = { tipo: "Se", condicao, entao, senao }
+    if (senaoSe.length > 0) (no as any).senaoSe = senaoSe
+    return no
   }
 
-  function parseParaCada(): No {
-    consumir("PARA")
-    consumir("CADA")
-    const variavel = consumir("IDENT").value
-    consumir("EM")
-    const colecao = consumir("IDENT").value
+  function parseEnquanto(): No {
+    consumir("ENQUANTO")
+    const condicao = parseExpr(0)
     consumir("LBRACE")
     const corpo = parseBloco()
     consumir("RBRACE")
-    return { tipo: "ParaCada", variavel, colecao, corpo }
+    return { tipo: "Enquanto", condicao, corpo }
+  }
+
+  function parseEscolher(): No {
+    consumir("ESCOLHER")
+    consumir("LPAREN")
+    const expr = parseExpr(0)
+    consumir("RPAREN")
+    consumir("LBRACE")
+    const casos: Caso[] = []
+    let padrao: No[] | undefined
+    while (peek().type !== "RBRACE" && peek().type !== "EOF") {
+      if (peek().type === "CASO") {
+        consumir("CASO")
+        const valor = parseExpr(0)
+        consumir("LBRACE")
+        const corpo = parseBloco()
+        consumir("RBRACE")
+        casos.push({ valor, corpo })
+      } else if (peek().type === "PADRAO") {
+        consumir("PADRAO")
+        consumir("LBRACE")
+        padrao = parseBloco()
+        consumir("RBRACE")
+      } else {
+        throw new ErroParser(
+          `Esperado 'caso' ou 'padrao', encontrado "${peek().value}"`,
+          peek().linha,
+          peek().coluna,
+        )
+      }
+    }
+    consumir("RBRACE")
+    const no: No = { tipo: "Escolher", expr, casos }
+    if (padrao) (no as any).padrao = padrao
+    return no
+  }
+
+  function parseVariavel(): No {
+    consumir("VAR")
+    const nome = consumir("IDENT").value
+    let valor: Expressao | undefined
+    if (peek().type === "EQUALS") {
+      consumir("EQUALS")
+      valor = parseExpr(0)
+    }
+    const no: No = { tipo: "Variavel", nome }
+    if (valor) (no as any).valor = valor
+    return no
+  }
+
+  function parsePara(): No {
+    consumir("PARA")
+    // "para cada" → forEach
+    if (peek().type === "CADA") {
+      consumir("CADA")
+      const variavel = consumirValorParaVariavel()
+      consumir("EM")
+      const colecao = consumirValorParaVariavel()
+      consumir("LBRACE")
+      const corpo = parseBloco()
+      consumir("RBRACE")
+      return { tipo: "ParaCada", variavel, colecao, corpo }
+    }
+    // "para X = Y ate Z" → numeric for
+    const variavel = consumirValorParaVariavel()
+    consumir("EQUALS")
+    const inicio = parseExpr(0)
+    consumir("ATE")
+    const ate = parseExpr(0)
+    let passo: Expressao | undefined
+    if (peek().type === "PASSO") {
+      consumir("PASSO")
+      passo = parseExpr(0)
+    }
+    consumir("LBRACE")
+    const corpo = parseBloco()
+    consumir("RBRACE")
+    const no: No = { tipo: "Para", variavel, inicio, ate, corpo }
+    if (passo) (no as any).passo = passo
+    return no
+  }
+
+  function consumirValorParaVariavel(): string {
+    const token = peek()
+    // Aceita IDENT ou qualquer palavra reservada que possa ser nome de variável/coleção
+    const tiposAceites = new Set([
+      "IDENT", "ITEM", "LISTA", "TEXTO", "NUMERO", "TITULO", "BOTAO",
+      "IMAGEM", "ENTRADA", "CARTAO", "SECAO", "GRADE", "COLUNA", "LINHA",
+    ])
+    if (tiposAceites.has(token.type)) {
+      return consumir().value
+    }
+    throw new ErroParser(
+      `Esperado nome de variável, encontrado "${token.value}" (${token.type})`,
+      token.linha,
+      token.coluna,
+    )
   }
 
   function parseRota(): No {
@@ -394,6 +516,13 @@ export function parser(tokens: Token[]): No[] {
     consumir("RETORNAR")
     const valor = parseExpr(0)
     return { tipo: "Retornar", valor }
+  }
+
+  function parseAtribuir(): No {
+    const nome = consumir("IDENT").value
+    consumir("EQUALS")
+    const valor = parseExpr(0)
+    return { tipo: "Atribuir", nome, valor }
   }
 
   function parseLinha(): No {
@@ -699,6 +828,25 @@ export function parser(tokens: Token[]): No[] {
         consumir()
         return { tipo: "Num", valor: token.value }
       case "IDENT":
+        consumir()
+        return { tipo: "Ident", nome: token.value }
+      // Keywords que também podem ser usadas como identificadores em expressões
+      case "ITEM":
+      case "LISTA":
+      case "TEXTO":
+      case "TITULO":
+      case "BOTAO":
+      case "IMAGEM":
+      case "ENTRADA":
+      case "CARTAO":
+      case "SECAO":
+      case "GRADE":
+      case "COLUNA":
+      case "LINHA":
+      case "DISTINTIVO":
+      case "DIVISOR":
+      case "VIDEO":
+      case "CITACAO":
         consumir()
         return { tipo: "Ident", nome: token.value }
       case "NOT":

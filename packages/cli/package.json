@@ -1,6 +1,6 @@
 {
   "name": "@porttugol/cli",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "CLI do Portugol.js — cria, compila e serve páginas web em português",
   "author": {
     "name": "Eketiandro Gonçalo"

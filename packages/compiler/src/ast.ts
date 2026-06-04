@@ -12,6 +12,11 @@ export interface Campo {
   modificadores: string[]
 }
 
+export interface Caso {
+  valor: Expressao
+  corpo: No[]
+}
+
 export interface MetodoRota {
   tipo: "obter" | "criar" | "atualizar" | "deletar"
   corpo: No[]
@@ -79,8 +84,13 @@ export type No =
   | { tipo: "Citacao"; texto: string; autor?: string; estilos?: Estilos }
   // Lógica
   | { tipo: "Funcao"; nome: string; params: string[]; corpo: No[] }
-  | { tipo: "Se"; condicao: Expressao; entao: No[]; senao: No[] }
+  | { tipo: "Se"; condicao: Expressao; entao: No[]; senao: No[]; senaoSe?: { condicao: Expressao; corpo: No[] }[] }
+  | { tipo: "Enquanto"; condicao: Expressao; corpo: No[] }
+  | { tipo: "Escolher"; expr: Expressao; casos: Caso[]; padrao?: No[] }
   | { tipo: "ParaCada"; variavel: string; colecao: string; corpo: No[] }
+  | { tipo: "Para"; variavel: string; inicio: Expressao; ate: Expressao; passo?: Expressao; corpo: No[] }
   | { tipo: "Rota"; caminho: string; metodos: MetodoRota[] }
   | { tipo: "Modelo"; nome: string; campos: Campo[] }
   | { tipo: "Retornar"; valor: Expressao }
+  | { tipo: "Atribuir"; nome: string; valor: Expressao }
+  | { tipo: "Variavel"; nome: string; valor?: Expressao }

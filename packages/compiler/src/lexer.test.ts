@@ -100,4 +100,29 @@ describe("Lexer Portugol", () => {
     expect(tokens[0].type).toBe("NUMERO")
     expect(tokens[0].value).toBe("50.5%")
   })
+
+  // ─── Novas palavras-chave ───
+
+  it("reconhece 'enquanto'", () => {
+    const tokens = lexer("enquanto verdadeiro { }")
+    expect(tokens[0].type).toBe("ENQUANTO")
+  })
+
+  it("reconhece 'escolher'", () => {
+    const tokens = lexer("escolher (x) { caso 1 { } padrao { } }")
+    expect(tokens[0].type).toBe("ESCOLHER")
+    expect(tokens[5].type).toBe("CASO")
+    expect(tokens[9].type).toBe("PADRAO")
+  })
+
+  it("reconhece 'var'", () => {
+    const tokens = lexer("var x = 10")
+    expect(tokens[0].type).toBe("VAR")
+  })
+
+  it("reconhece 'ate' e 'passo'", () => {
+    const tokens = lexer("para i = 0 ate 10 passo 2")
+    expect(tokens[4].type).toBe("ATE")
+    expect(tokens[6].type).toBe("PASSO")
+  })
 })

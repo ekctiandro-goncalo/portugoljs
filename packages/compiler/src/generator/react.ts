@@ -171,6 +171,18 @@ function gerarNoCE(no: any, depth = 2): string {
         : ""
       return `${pad}React.createElement("blockquote", ${props},\n${pad}  React.createElement("p", null, ${JSON.stringify(no.texto)})${autor}\n${pad})`
     }
+    case "Funcao":
+    case "Se":
+    case "Enquanto":
+    case "Escolher":
+    case "ParaCada":
+    case "Para":
+    case "Atribuir":
+    case "Variavel":
+    case "Rota":
+    case "Modelo":
+    case "Retornar":
+      return `${pad}// ${no.tipo}: omitido na geração CE`
     default:
       return `${pad}null`
   }
@@ -271,8 +283,18 @@ function gerarNo(no: No): string {
       return gerarFuncao(no)
     case "Se":
       return gerarSe(no)
+    case "Enquanto":
+      return gerarEnquanto(no)
+    case "Escolher":
+      return gerarEscolher(no)
     case "ParaCada":
       return gerarParaCada(no)
+    case "Para":
+      return gerarPara(no)
+    case "Atribuir":
+      return gerarAtribuir(no)
+    case "Variavel":
+      return gerarVariavel(no)
     case "Rota":
       return gerarRota(no)
     case "Modelo":
@@ -337,15 +359,69 @@ function gerarFuncao(no: No & { tipo: "Funcao" }): string {
 
 function gerarSe(no: No & { tipo: "Se" }): string {
   const entao = no.entao.map(gerarNo).join("\n")
+  let senaoSe = ""
+  if ((no as any).senaoSe) {
+    senaoSe = (no as any).senaoSe.map(
+      (ss: { condicao: any; corpo: No[] }) =>
+        `    } else if (${gerarExpr(ss.condicao)}) {\n${ss.corpo.map(gerarNo).join("\n")}`
+    ).join("\n")
+  }
   const senao = no.senao.length
     ? `    } else {\n${no.senao.map(gerarNo).join("\n")}\n    }`
-    : ""
+    : senaoSe ? `    }` : ""
+  const inicio = senaoSe ? `\n${senaoSe}\n${senao}` : senao
   return [
     `    if (${gerarExpr(no.condicao)}) {`,
     entao,
-    senao,
+    inicio,
     `    }`,
   ].join("\n")
+}
+
+function gerarEnquanto(no: No & { tipo: "Enquanto" }): string {
+  const corpo = no.corpo.map(gerarNo).join("\n")
+  return [
+    `    while (${gerarExpr(no.condicao)}) {`,
+    corpo,
+    `    }`,
+  ].join("\n")
+}
+
+function gerarEscolher(no: No & { tipo: "Escolher" }): string {
+  const casos = no.casos.map((c) => {
+    const corpo = c.corpo.map(gerarNo).join("\n")
+    return `    case ${gerarExpr(c.valor)}:\n${corpo}\n      break`
+  }).join("\n")
+  const padrao = (no as any).padrao
+    ? `\n    default:\n${(no as any).padrao.map((n: No) => gerarNo(n)).join("\n")}`
+    : ""
+  return [
+    `    switch (${gerarExpr(no.expr)}) {`,
+    casos,
+    padrao,
+    `    }`,
+  ].join("\n")
+}
+
+function gerarPara(no: No & { tipo: "Para" }): string {
+  const corpo = no.corpo.map(gerarNo).join("\n")
+  const passo = (no as any).passo ? gerarExpr((no as any).passo) : "1"
+  return [
+    `    for (let ${no.variavel} = ${gerarExpr(no.inicio)}; ${no.variavel} <= ${gerarExpr(no.ate)}; ${no.variavel} += ${passo}) {`,
+    corpo,
+    `    }`,
+  ].join("\n")
+}
+
+function gerarAtribuir(no: No & { tipo: "Atribuir" }): string {
+  return `    ${no.nome} = ${gerarExpr(no.valor)}`
+}
+
+function gerarVariavel(no: No & { tipo: "Variavel" }): string {
+  if ((no as any).valor) {
+    return `    let ${no.nome} = ${gerarExpr((no as any).valor)}`
+  }
+  return `    let ${no.nome}`
 }
 
 const OPERADOR_PARA_JS: Record<string, string> = {
