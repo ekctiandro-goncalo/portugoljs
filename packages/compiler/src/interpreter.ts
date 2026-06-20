@@ -151,7 +151,7 @@ export class Interpreter {
         throw { tipo: "retornar", valor }
       }
 
-      // ─── Se / Senao ───
+      // ─── Se / Senao se / Senao ───
       case "Se": {
         const condicao = this.avaliarExpr(no.condicao, env)
         const escopo = new Ambiente(env)
@@ -159,7 +159,21 @@ export class Interpreter {
           for (const filho of no.entao) {
             this.executarNo(filho, escopo)
           }
-        } else if (no.senao.length > 0) {
+          return
+        }
+        const senaoSe = (no as any).senaoSe as { condicao: Expressao; corpo: No[] }[] | undefined
+        if (senaoSe) {
+          for (const ramo of senaoSe) {
+            if (this.truthy(this.avaliarExpr(ramo.condicao, env))) {
+              const escopoRamo = new Ambiente(env)
+              for (const filho of ramo.corpo) {
+                this.executarNo(filho, escopoRamo)
+              }
+              return
+            }
+          }
+        }
+        if (no.senao.length > 0) {
           for (const filho of no.senao) {
             this.executarNo(filho, escopo)
           }
@@ -321,6 +335,39 @@ export class Interpreter {
           case "<=": return esq <= dir
           default:   return esq
         }
+      }
+
+      case "Chamada": {
+        const fn = env.obter(expr.nome)
+        if (!fn || fn.tipo !== "Funcao") {
+          this.saida.push({ tipo: "erro", valor: `Função "${expr.nome}" não está definida.` })
+          return undefined
+        }
+
+        const argsAvaliados = expr.args.map((a) => this.avaliarExpr(a, env))
+
+        if (argsAvaliados.length !== fn.params.length) {
+          this.saida.push({
+            tipo: "erro",
+            valor: `Função "${expr.nome}" espera ${fn.params.length} argumento(s), recebeu ${argsAvaliados.length}.`,
+          })
+          return undefined
+        }
+
+        const escopoFuncao = new Ambiente(env)
+        fn.params.forEach((paramNome: string, i: number) => {
+          escopoFuncao.definir(paramNome, argsAvaliados[i])
+        })
+
+        try {
+          for (const stmt of fn.corpo) {
+            this.executarNo(stmt, escopoFuncao)
+          }
+        } catch (e: any) {
+          if (e?.tipo === "retornar") return e.valor
+          throw e
+        }
+        return undefined // função sem 'retornar' explícito
       }
     }
   }

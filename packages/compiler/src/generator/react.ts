@@ -256,6 +256,7 @@ function gerarExprCE(expr: any): string {
   if (expr.tipo === "Num") return expr.valor
   if (expr.tipo === "Bool") return expr.valor ? "true" : "false"
   if (expr.tipo === "Ident") return expr.nome
+  if (expr.tipo === "Chamada") return `${expr.nome}(${expr.args.map(gerarExprCE).join(", ")})`
   return JSON.stringify(String(expr))
 }
 
@@ -446,6 +447,8 @@ function gerarExpr(expr: Expressao): string {
     case "Unaria":
       const op = expr.oper === "nao" ? "!" : expr.oper
       return `${op}${gerarExpr(expr.expr)}`
+    case "Chamada":
+      return `${expr.nome}(${expr.args.map(gerarExpr).join(", ")})`
   }
 }
 

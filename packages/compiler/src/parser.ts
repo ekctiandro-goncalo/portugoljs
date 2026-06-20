@@ -818,6 +818,20 @@ export function parser(tokens: Token[]): No[] {
     STAR: 5, SLASH: 5,
   }
 
+  function parseArgsChamada(): Expressao[] {
+    consumir("LPAREN")
+    const args: Expressao[] = []
+    if (peek().type !== "RPAREN") {
+      args.push(parseExpr(0))
+      while (peek().type === "COMMA") {
+        consumir("COMMA")
+        args.push(parseExpr(0))
+      }
+    }
+    consumir("RPAREN")
+    return args
+  }
+
   function prefixo(): Expressao {
     const token = peek()
     switch (token.type) {
@@ -829,6 +843,11 @@ export function parser(tokens: Token[]): No[] {
         return { tipo: "Num", valor: token.value }
       case "IDENT":
         consumir()
+        // Chamada de função: nome(args)
+        if (peek().type === "LPAREN") {
+          const args = parseArgsChamada()
+          return { tipo: "Chamada", nome: token.value, args }
+        }
         return { tipo: "Ident", nome: token.value }
       // Keywords que também podem ser usadas como identificadores em expressões
       case "ITEM":

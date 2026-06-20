@@ -5,6 +5,7 @@ export type Expressao =
   | { tipo: "Ident"; nome: string }
   | { tipo: "Binaria"; esq: Expressao; oper: string; dir: Expressao }
   | { tipo: "Unaria"; oper: string; expr: Expressao }
+  | { tipo: "Chamada"; nome: string; args: Expressao[] }
 
 export interface Campo {
   nome: string
