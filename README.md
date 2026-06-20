@@ -264,7 +264,7 @@ cd ../cli && npm run build
 
 ## Licença
 
-MIT © [Eketiandro Gonçalo](https://github.com/ekctiandro-goncalo) — 2026
+MIT © [Ekctiandro Gonçalo](https://github.com/ekctiandro-goncalo) — 2026
 
 ---
 
