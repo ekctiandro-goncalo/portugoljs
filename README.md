@@ -113,6 +113,7 @@ pagina MeuSite {
 |---|---|
 | `portugol iniciar ficheiro.pjs` | Servidor de desenvolvimento com live reload |
 | `portugol construir ficheiro.pjs` | Compila para HTML + CSS estático |
+| `portugol correr ficheiro.pjs` | Executa lógica .pjs no terminal (interpreter) |
 | `portugol novo nome-do-projecto` | Cria novo projecto com estrutura base |
 | `portugol exportar ficheiro.pjs` | Gera projecto Next.js completo |
 
@@ -181,6 +182,63 @@ titulo {
 
 ---
 
+## Lógica e Scripting (Modo Terminal)
+
+A partir da v0.2.1, o Portugol.js também suporta **lógica imperativa** para executar directamente no terminal com `portugol correr`.
+
+```
+var idade = 18
+var temCarta = verdadeiro
+
+se idade >= 18 e temCarta == verdadeiro {
+    texto "Podes conduzir!"
+} senao {
+    texto "Não podes conduzir."
+}
+
+var i = 1
+enquanto i <= 5 {
+    texto "Contagem: " + i
+    i = i + 1
+}
+
+para i = 0 ate 10 {
+    texto i
+}
+
+escolher nota {
+    caso "A" { texto "Excelente" }
+    caso "B" { texto "Bom" }
+    caso "C" { texto "Suficiente" }
+    padrao { texto "Outro" }
+}
+
+funcao fib(n) {
+    se n <= 1 { retornar n }
+    retornar fib(n - 1) + fib(n - 2)
+}
+
+texto "Fibonacci(10) = " + fib(10)
+```
+
+**Conceitos suportados:**
+| Conceito | Descrição |
+|---|---|
+| `var nome = valor` | Declaração de variável |
+| `nome = expr` | Atribuição |
+| `se cond { ... } senao { ... }` | Condicional |
+| `escolher expr { caso ... padrao }` | Switch em português |
+| `enquanto cond { ... }` | Loop com condição |
+| `para i = inicio ate fim { ... }` | Loop numérico |
+| `para cada item in lista { ... }` | Iteração sobre lista |
+| `funcao nome(params) { ... }` | Definição de função |
+| `retornar expr` | Retorno de valor |
+| `parar` / `continuar` | Controlo de loops |
+| `e` / `ou` / `!` | Operadores lógicos em português |
+| `verdadeiro` / `falso` | Booleanos em português |
+
+---
+
 ## Integração com Next.js
 
 ```bash
@@ -208,7 +266,7 @@ pagina Inicio {
 ```
 portugoljs/
 ├── packages/
-│   ├── compiler/          # @porttugol/compiler — Lexer, Parser, AST, Gerador
+│   ├── compiler/          # @porttugol/compiler — Lexer, Parser, AST, Interpreter, Gerador
 │   ├── cli/               # @porttugol/cli — CLI com servidor e build
 │   └── vscode-extension/  # Extensão VS Code / Kiro com autocomplete
 ├── teste/
@@ -243,7 +301,7 @@ Instala a extensão para teres:
 **Instalar:**
 ```bash
 # Descarrega o .vsix de packages/vscode-extension/
-code --install-extension portugol-lang-0.2.0.vsix
+code --install-extension portugol-lang-0.2.1.vsix
 ```
 
 ---

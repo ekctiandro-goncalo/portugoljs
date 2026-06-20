@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander"
 import chalk from "chalk"
-import { lexer, parser, gerarReact, gerarPaginaNext, gerarHTML } from "@portugol/compiler"
+import { lexer, parser, gerarReact, gerarPaginaNext, gerarHTML, Interpreter } from "@portugol/compiler"
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs"
 import { join, dirname, basename, extname } from "path"
 
@@ -599,6 +599,43 @@ program
     await program.commands.find(c => c.name() === "novo")!.parseAsync(
       ["node", "pgjs", "novo"]
     )
+  })
+
+// ─── pgjs correr — Interpreter no terminal ───
+
+program
+  .command("correr <arquivo>")
+  .description("Executar ficheiro .pjs directamente no terminal")
+  .action((arquivo) => {
+    const caminho = join(process.cwd(), arquivo)
+
+    if (!existsSync(caminho)) {
+      console.error(chalk.red(`✗ Ficheiro não encontrado: ${caminho}`))
+      process.exit(1)
+    }
+
+    const codigo = readFileSync(caminho, "utf-8").replace(/^\uFEFF/, "").replace(/\x00/g, "")
+    const tokens = lexer(codigo)
+    const ast = parser(tokens)
+
+    const interpreter = new Interpreter()
+    const saida = interpreter.executar(ast)
+
+    console.log(chalk.blue(`\n⚡ Portugol.js — A correr: ${arquivo}\n`))
+    console.log(chalk.dim("─".repeat(50)))
+
+    for (const linha of saida) {
+      if (linha.tipo === "texto") {
+        console.log(chalk.white(linha.valor))
+      } else if (linha.tipo === "aviso") {
+        console.log(chalk.yellow(`⚠ ${linha.valor}`))
+      } else if (linha.tipo === "erro") {
+        console.log(chalk.red(`✗ ${linha.valor}`))
+      }
+    }
+
+    console.log(chalk.dim("─".repeat(50)))
+    console.log(chalk.green(`\n  ✓ Concluído — ${saida.filter(s => s.tipo === "texto").length} linha(s) de saída\n`))
   })
 
 program.parse()

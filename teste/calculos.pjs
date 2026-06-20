@@ -1,0 +1,78 @@
+pagina Calculos {
+
+    # Variaveis simples
+    var x = 10
+    var y = 3
+    var nome = "Eketiandro"
+    var nota = 10
+    texto "=== Variaveis ==="
+    texto "x = 10, y = 3"
+
+    # Operacoes aritmeticas
+    texto "=== Aritmetica ==="
+    texto "x + y = " + (x + y)
+    texto "x - y = " + (x - y)
+    texto "x * y = " + (x * y)
+    texto "x / y = " + (x / y)
+
+    # Condicional
+    texto "=== Condicional ==="
+    se nota > 7 {
+        texto "Aprovado"
+    } senao {
+        texto "Reprovado"
+    }
+
+    se x == 10 {
+        texto "x e igual a 10"
+    }
+
+    # Loop para
+    texto "=== Loop Para ==="
+    para i = 1 ate 5 {
+        texto "Numero: " + i
+    }
+
+    # Loop para com passo
+    texto "=== Loop Para com Passo 2 ==="
+    para i = 0 ate 10 passo 2 {
+        texto "Par: " + i
+    }
+
+    # Loop enquanto
+    texto "=== Loop Enquanto ==="
+    var contador = 1
+    enquanto contador <= 3 {
+        texto "Contagem: " + contador
+        contador = contador + 1
+    }
+
+    # Escolher
+    texto "=== Escolher / Caso ==="
+    var dia = 3
+    escolher (dia) {
+        caso 1 { texto "Segunda-feira" }
+        caso 2 { texto "Terca-feira" }
+        caso 3 { texto "Quarta-feira" }
+        caso 4 { texto "Quinta-feira" }
+        caso 5 { texto "Sexta-feira" }
+        padrao { texto "Fim de semana" }
+    }
+
+    # Logicos
+    texto "=== Operadores Logicos ==="
+    var logado = verdadeiro
+    var admin = falso
+
+    se logado e nao admin {
+        texto "Utilizador normal logado"
+    }
+
+    se logado ou admin {
+        texto "Tem algum acesso"
+    }
+
+    texto "=== Fim ==="
+    texto "Ola " + nome + "! Tudo funcionou."
+
+}

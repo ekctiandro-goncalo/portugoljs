@@ -1,87 +1,325 @@
-pagina DemonstracaoLogica {
+pagina Logica {
 
-    # ══════════════════════════════════════════════
-    # VARIAVEIS
-    # ══════════════════════════════════════════════
-    var contador = 0
-    var nome = "Portugol"
-    var ativo = verdadeiro
+    secao Demo {
+        centralizar
+        padding 60
 
-    # ══════════════════════════════════════════════
-    # FUNCAO
-    # ══════════════════════════════════════════════
-    funcao saudacao(nome) {
-        retornar "Ola " + nome
+        titulo "Portugol.js — Lógica em Acção"
+        espacador 8
+        texto "Operações lógicas compiladas para React"
+
+        espacador 40
     }
 
-    # ══════════════════════════════════════════════
-    # SE / SENAO SE / SENAO
-    # ══════════════════════════════════════════════
-    titulo "Estruturas Condicionais"
+    divisor
 
-    se idade >= 18 {
-        texto "Maior de idade"
-    } senao se idade >= 13 {
-        texto "Adolescente"
-    } senao {
-        texto "Crianca"
+    secao Condicionais {
+        padding 60
+
+        subtitulo "Condicionais"
+        espacador 24
+        
+                grade 2 {
+            cartao {
+                distintivo "se / senao"
+                espacador 16
+                subtitulo "Verificar valor"
+                espacador 12
+                texto "Codigo:"
+                texto {
+                    "se pontos >= 50 {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto \"Aprovado!\""
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "} senao {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto \"Reprovado\""
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+            }
+            cartao {
+                distintivo "senao se"
+                espacador 16
+                subtitulo "Multiplas condições"
+                espacador 12
+                texto "Codigo:"
+                texto {
+                    "se nota >= 90 {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto \"Excelente\""
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "} senao se nota >= 70 {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto \"Bom\""
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "} senao {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto \"Insuficiente\""
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+            }
+        }
     }
 
-    se logado e admin {
-        texto "Acesso total"
+    divisor
+
+    secao Loops {
+        padding 60
+
+        subtitulo "Loops"
+        espacador 24
+
+        grade 3 {
+            cartao {
+                distintivo "enquanto"
+                espacador 16
+                subtitulo "Loop while"
+                espacador 12
+                texto {
+                    "enquanto contador < 5 {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto contador"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    contador = contador + 1"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+                espacador 12
+                texto "Repete enquanto a condição for verdadeira."
+            }
+            cartao {
+                distintivo "para"
+                espacador 16
+                subtitulo "Loop for"
+                espacador 12
+                texto {
+                    "para i = 1 ate 10 {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto i"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+                espacador 12
+                texto "Conta de 1 até 10."
+            }
+            cartao {
+                distintivo "para cada"
+                espacador 16
+                subtitulo "Loop forEach"
+                espacador 12
+                texto {
+                    "para cada item em lista {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    texto item"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+                espacador 12
+                texto "Percorre todos os itens de uma lista."
+            }
+        }
     }
 
-    se nao logado {
-        texto "Por favor faca login"
+    divisor
+
+    secao Switch {
+        padding 60
+
+        subtitulo "Escolher / Caso"
+        espacador 24
+
+        linha {
+            coluna {
+                texto "Como funciona o switch em Portugol:"
+                espacador 16
+                texto {
+                    "escolher (dia) {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    caso 1 { texto \"Segunda\" }"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    caso 2 { texto \"Terca\" }"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    caso 3 { texto \"Quarta\" }"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    padrao { texto \"Outro dia\" }"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+            }
+            coluna {
+                texto "Equivalente em JavaScript:"
+                espacador 16
+                texto {
+                    "switch (dia) {"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    case 1: return 'Segunda'"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    case 2: return 'Terca'"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    case 3: return 'Quarta'"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "    default: return 'Outro dia'"
+                    tamanho 13
+                    peso 600
+                }
+                texto {
+                    "}"
+                    tamanho 13
+                    peso 600
+                }
+            }
+        }
     }
 
-    # ══════════════════════════════════════════════
-    # ESCOLHER / CASO / PADRAO  (switch)
-    # ══════════════════════════════════════════════
-    titulo "Escolher (Switch)"
+    divisor
 
-    escolher (dia) {
-        caso 1 { texto "Segunda" }
-        caso 2 { texto "Terca" }
-        caso 3 { texto "Quarta" }
-        caso 4 { texto "Quinta" }
-        caso 5 { texto "Sexta" }
-        padrao { texto "Fim de semana" }
+    secao Operadores {
+        padding 60
+
+        subtitulo "Operadores"
+        espacador 24
+
+        grade 3 {
+            cartao {
+                distintivo "Comparação"
+                espacador 16
+                lista {
+                    item "== igual a"
+                    item "!= diferente de"
+                    item "> maior que"
+                    item "< menor que"
+                    item ">= maior ou igual"
+                    item "<= menor ou igual"
+                }
+            }
+            cartao {
+                distintivo "Lógicos"
+                espacador 16
+                lista {
+                    item "e — AND lógico"
+                    item "ou — OR lógico"
+                    item "nao — NOT lógico"
+                    item "verdadeiro — true"
+                    item "falso — false"
+                }
+            }
+            cartao {
+                distintivo "Aritméticos"
+                espacador 16
+                lista {
+                    item "+ adição"
+                    item "- subtração"
+                    item "* multiplicação"
+                    item "/ divisão"
+                }
+            }
+        }
     }
 
-    # ══════════════════════════════════════════════
-    # ENQUANTO  (while)
-    # ══════════════════════════════════════════════
-    titulo "Loop Enquanto"
+    divisor
 
-    enquanto contador < 5 {
-        texto "Contagem: " + contador
-        contador = contador + 1
+    secao Rodape {
+        centralizar
+        padding 40
+        linha {
+            icone codigo
+            texto {
+                "Portugol.js v0.2.0 — Lógica completa"
+                tamanho 14
+            }
+        }
     }
 
-    # ══════════════════════════════════════════════
-    # PARA (for numerico)
-    # ══════════════════════════════════════════════
-    titulo "Loop Para Numerico"
-
-    para i = 0 ate 10 {
-        texto "Numero: " + i
-    }
-
-    para i = 0 ate 10 passo 2 {
-        texto "Par: " + i
-    }
-
-    # ══════════════════════════════════════════════
-    # PARA CADA (forEach)
-    # ══════════════════════════════════════════════
-    titulo "Loop Para Cada"
-
-    para cada item em lista {
-        texto "Item: " + item
-    }
-
-    para cada produto em carrinho {
-        texto "Produto: " + produto
-    }
 }
