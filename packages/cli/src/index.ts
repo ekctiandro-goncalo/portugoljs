@@ -2,7 +2,9 @@
 import { Command } from "commander"
 import chalk from "chalk"
 import { lexer, parser, gerarReact, gerarPaginaNext, gerarHTML, Interpreter } from "@porttugol/compiler"
-import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs"
+import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync, watch, statSync } from "fs"
+import { execSync } from "child_process"
+import { createServer } from "http"
 import { join, dirname, basename, extname } from "path"
 
 const program = new Command()
@@ -636,6 +638,162 @@ program
 
     console.log(chalk.dim("─".repeat(50)))
     console.log(chalk.green(`\n  ✓ Concluído — ${saida.filter(s => s.tipo === "texto").length} linha(s) de saída\n`))
+  })
+
+// ─── pgjs servir — Dev server com live reload ───
+
+program
+  .command("servir <arquivo>")
+  .description("Servir ficheiro .pjs com live reload no browser")
+  .option("-p, --porta <porta>", "Porta do servidor", "3000")
+  .option("--no-abrir", "Não abrir browser automaticamente")
+  .action(async (arquivo, options) => {
+    const caminho = join(process.cwd(), arquivo)
+    if (!existsSync(caminho)) {
+      console.error(chalk.red(`✗ Ficheiro não encontrado: ${caminho}`))
+      process.exit(1)
+    }
+
+    const dirSaida = join(process.cwd(), ".portugol-servir")
+    if (existsSync(dirSaida)) rmSync(dirSaida, { recursive: true })
+    mkdirSync(dirSaida, { recursive: true })
+
+    // Clientes SSE conectados
+    const clientesSSE: Set<(dados: string) => void> = new Set()
+
+    function compilar() {
+      const codigo = readFileSync(caminho, "utf-8").replace(/^\uFEFF/, "").replace(/\x00/g, "")
+      const tokens = lexer(codigo)
+      const ast = parser(tokens)
+      const { html, css } = gerarHTML(ast)
+
+      // Inject live reload SSE script antes de </body>
+      const scriptLive = `<script>
+(function(){var e=new EventSource("/__live");e.onmessage=function(m){if(m.data==="recarregar"){location.reload()}}})()
+</script></body>`
+      const htmlFinal = html.replace("</body>", scriptLive)
+
+      writeFileSync(join(dirSaida, "index.html"), htmlFinal)
+      writeFileSync(join(dirSaida, "styles.css"), css)
+
+      // Notificar clientes SSE
+      for (const enviar of clientesSSE) {
+        try { enviar("recarregar") } catch {}
+      }
+
+      return { html: htmlFinal, css, tokens: tokens.length, ast: ast.length }
+    }
+
+    // Compilação inicial
+    const inicio = Date.now()
+    const resInicial = compilar()
+    const tempo = Date.now() - inicio
+
+    // Limpar terminal e mostrar estado
+    console.clear()
+    console.log(chalk.blue(`╔══════════════════════════════════════╗`))
+    console.log(chalk.blue(`║    ⚡ Portugol.js — Live Server     ║`))
+    console.log(chalk.blue(`╚══════════════════════════════════════╝`))
+    console.log(`\n  ${chalk.bold("Ficheiro:")}  ${chalk.cyan(arquivo)}`)
+    console.log(`  ${chalk.bold("Tokens:")}   ${chalk.yellow(resInicial.tokens)}`)
+    console.log(`  ${chalk.bold("AST:")}      ${chalk.yellow(resInicial.ast)}`)
+    console.log(`  ${chalk.bold("Tempo:")}   ${chalk.green(`${tempo}ms`)}`)
+    console.log(`  ${chalk.bold("HTML:")}    ${chalk.dim(formatBytes(Buffer.byteLength(resInicial.html)))}`)
+    console.log(`  ${chalk.bold("CSS:")}     ${chalk.dim(formatBytes(Buffer.byteLength(resInicial.css)))}`)
+    console.log(`\n`)
+
+    // Watch file changes
+    try {
+      let timeoutWatch: ReturnType<typeof setTimeout> | null = null
+      let ultimoMtime = 0
+      watch(caminho, (evento) => {
+        if (evento !== "change") return
+        const stats = existsSync(caminho) ? statSync(caminho) : null
+        if (!stats || stats.mtimeMs === ultimoMtime) return
+        ultimoMtime = stats.mtimeMs
+        if (timeoutWatch) clearTimeout(timeoutWatch)
+        timeoutWatch = setTimeout(() => {
+          try {
+            const inicioR = Date.now()
+            const r = compilar()
+            const t = Date.now() - inicioR
+            console.log(chalk.green(`  ✓ Recompilado em ${t}ms — ${formatBytes(Buffer.byteLength(r.html))}`))
+          } catch (erro) {
+            console.error(chalk.red(`  ✗ Erro na compilação: ${erro}`))
+          }
+        }, 100)
+      })
+    } catch {}
+
+    const MIME: Record<string, string> = {
+      ".html": "text/html; charset=utf-8",
+      ".css": "text/css; charset=utf-8",
+      ".js": "application/javascript",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".svg": "image/svg+xml",
+    }
+
+    const porta = parseInt(options.porta, 10)
+    const server = createServer((req, res) => {
+      const url = req.url!.split("?")[0]
+
+      // SSE endpoint para live reload
+      if (url === "/__live") {
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+          "Access-Control-Allow-Origin": "*",
+        })
+        res.write("data: conectado\n\n")
+
+        const enviar = (dados: string) => {
+          res.write(`data: ${dados}\n\n`)
+        }
+        clientesSSE.add(enviar)
+
+        req.on("close", () => {
+          clientesSSE.delete(enviar)
+        })
+        return
+      }
+
+      let caminhoFicheiro = join(dirSaida, url === "/" ? "index.html" : url)
+
+      if (!caminhoFicheiro.startsWith(dirSaida)) {
+        res.writeHead(403)
+        res.end("Proibido")
+        return
+      }
+
+      try {
+        const conteudo = readFileSync(caminhoFicheiro)
+        const ext = extname(url)
+        res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" })
+        res.end(conteudo)
+      } catch {
+        res.writeHead(404)
+        res.end("Não encontrado")
+      }
+    })
+
+    server.listen(porta, () => {
+      const url = `http://localhost:${porta}`
+      console.log(`  ${chalk.bold("Servidor:")} ${chalk.cyan(url)}`)
+      console.log(`  ${chalk.dim("  Ctrl+C para parar")}\n`)
+
+      // Abrir browser
+      if (options.abrir !== false) {
+        try { execSync(`start ${url}`, { shell: true, stdio: "ignore" } as any) } catch {}
+      }
+    })
+
+    function formatBytes(bytes: number): string {
+      if (bytes < 1024) return `${bytes} B`
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    }
   })
 
 program.parse()
