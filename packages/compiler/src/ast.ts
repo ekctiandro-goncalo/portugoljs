@@ -45,15 +45,49 @@ export interface Estilos {
   justificar?: string
   centralizar?: boolean
   origem?: string
-  // Novos
   animacao?: string
   cursor?: string
   overflow?: string
   transicao?: string
   decoracao?: string
   maiusculas?: string
-  // Classes CSS extra (Tailwind-style)
   classe?: string
+  // Eventos
+  ao_clicar?: string
+  ao_mudar?: string
+  ao_submeter?: string
+  ao_focar?: string
+  ao_desfocar?: string
+  // Propriedades CSS avançadas
+  fonte?: string
+  disposicao?: string
+  direcao?: string
+  posicao?: string
+  topo?: string
+  direita?: string
+  baixo?: string
+  esquerda?: string
+  largura_min?: string
+  largura_max?: string
+  altura_min?: string
+  altura_max?: string
+  fundo_imagem?: string
+  fundo_tamanho?: string
+  fundo_repetir?: string
+  fundo_posicao?: string
+  fundo_anexo?: string
+  transformar?: string
+  filtro?: string
+  mascara?: string
+  combinar?: string
+  aspecto?: string
+  encaixe?: string
+  isolamento?: string
+  indice_z?: string
+  redimensionar?: string
+  translucido?: string
+  rolagem_x?: string
+  rolagem_y?: string
 }
 
 export const PROPRIEDADES_ESTILO = new Set([
@@ -62,6 +96,14 @@ export const PROPRIEDADES_ESTILO = new Set([
   "espacamento", "opacidade", "justificar", "centralizar", "origem",
   "animacao", "cursor", "overflow", "transicao", "decoracao", "maiusculas",
   "classe",
+  "ao_clicar", "ao_mudar", "ao_submeter", "ao_focar", "ao_desfocar",
+  "fonte", "disposicao", "direcao", "posicao",
+  "topo", "direita", "baixo", "esquerda",
+  "largura_min", "largura_max", "altura_min", "altura_max",
+  "fundo_imagem", "fundo_tamanho", "fundo_repetir", "fundo_posicao", "fundo_anexo",
+  "transformar", "filtro", "mascara", "combinar",
+  "aspecto", "encaixe", "isolamento", "indice_z",
+  "redimensionar", "translucido", "rolagem_x", "rolagem_y",
 ])
 
 // ─── AST Nodes ───

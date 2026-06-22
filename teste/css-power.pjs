@@ -1,0 +1,186 @@
+pagina "Portugol CSS Poderoso"
+
+secao "Nav" {
+  linha disposicao: "flex" direcao: "linha" espacamento: "24" padding: "16px 5vw" centralizar
+  estilo classe: "nav" fundo: "transparente"
+
+  texto "Portugol CSS" peso: "700" tamanho: "1.2rem"
+  linha disposicao: "flex" direcao: "linha" espacamento: "16"
+    estilo classe: "nav"
+    texto "Início" estilo classe: "nav-link-ativo"
+    texto "Componentes"
+    texto "Utilitários"
+    texto "GitHub"
+}
+
+secao "Hero" {
+  titulo "CSS Poderoso em Portugol"
+  subtitulo "Design System v5 — 28 novas propriedades, 150+ utilitários, animações, glassmorphism, container queries, scroll snap, print styles e muito mais"
+  linha disposicao: "flex" direcao: "linha" espacamento: "12" estilo classe: "flex-wrap"
+    botao "Explorar" estilo classe: "botao-lg"
+    botao "GitHub" estilo classe: "botao-outline botao-lg"
+    botao "← Voltar" estilo classe: "botao-ghost"
+}
+
+secao "Features" {
+  titulo "Novas Propriedades de Estilo" tamanho: "2rem"
+  grade colunas: 3
+    cartao estilo classe: "cartao-destaque"
+      icone "estrela"
+      subtitulo "Layout Avançado"
+      texto "disposicao, direcao, posicao, centralizar, espacamento, justificar, lacuna, ordem, crescer, encolher"
+    cartao
+      icone "codigo"
+      subtitulo "Box Model Estendido"
+      texto "largura_min, largura_max, altura_min, altura_max, padding, margem com unidade automática"
+    cartao
+      icone "definicoes"
+      subtitulo "Fundos Poderosos"
+      texto "fundo_imagem, fundo_tamanho, fundo_repetir, fundo_posicao, fundo_anexo, gradientes integrados"
+    cartao estilo classe: "cartao-borda"
+      icone "relampago"
+      subtitulo "Efeitos Visuais"
+      texto "transformar, filtro, mascara (clip-path), combinar (mix-blend-mode), translucido (backdrop-filter)"
+    cartao estilo classe: "cartao-plano"
+      icone "foguete"
+      subtitulo "Tipografia Completa"
+      texto "fonte (font-family), tamanho, peso, alinhamento, decoracao, maiusculas, tracking, leading, quebra"
+    cartao
+      icone "escudo"
+      subtitulo "Comportamento"
+      texto "cursor, overflow, redimensionar, aspecto, encaixe, isolamento, indice_z, rolagem separada"
+}
+
+secao "Demonstracao" {
+  titulo "Demonstração Interativa" tamanho: "2rem"
+
+  linha disposicao: "flex" direcao: "coluna" espacamento: "24" estilo classe: "w-full"
+
+  subtitulo "Posicionamento & Z-Index" tamanho: "1.4rem"
+  linha disposicao: "flex" direcao: "linha" espacamento: "16" estilo classe: "flex-wrap"
+    cartao estilo classe: "w-metade"
+      estilo posicao: "relativo" largura: "100%" altura: "200px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+      estilo classe: "relativo" fundo: "var(--acento)" cor: "var(--texto-inv)" padding: "8px 16px" raio: "var(--raio-sm)"
+      estilo classe: "absoluto" topo: "20px" direita: "20px" fundo: "var(--info)" cor: "#fff" padding: "8px 16px" raio: "var(--raio-sm)"
+      estilo classe: "absoluto" baixo: "20px" esquerda: "20px" fundo: "var(--sucesso)" cor: "#fff" padding: "8px 16px" raio: "var(--raio-sm)"
+      texto "Relativo (pai)"
+    cartao estilo classe: "w-metade"
+      subtitulo "Filtros & Transform" tamanho: "1rem"
+      linha disposicao: "flex" direcao: "linha" espacamento: "8"
+        estilo classe: "cartao-plano raio" padding: "16px" fundo: "var(--fundo-subtil)" estilo transformar: "rotate(10deg)"
+          texto "Rotacionado"
+        estilo classe: "cartao-plano raio" padding: "16px" fundo: "var(--fundo-subtil)" estilo filtro: "blur(1px)"
+          texto "Desfocado"
+        estilo classe: "cartao-plano raio" padding: "16px" fundo: "var(--fundo-subtil)" estilo filtro: "grayscale(1)"
+          texto "Cinza"
+        estilo classe: "cartao-plano raio" padding: "16px" fundo: "var(--fundo-subtil)" estilo combinar: "multiply" fundo: "var(--info)"
+          texto "Multiplicar"
+
+  subtitulo "Aspect Ratio & Object-Fit" tamanho: "1.4rem"
+  linha disposicao: "flex" direcao: "linha" espacamento: "16" estilo classe: "flex-wrap"
+    cartao estilo classe: "w-metade"
+      estilo aspecto: "16/9" largura: "100%" fundo: "var(--gradiente-colorido)" raio: "var(--raio)"
+      estilo classe: "d-flex items-center justify-center c-inv"
+      texto "16:9 Aspect Ratio"
+
+  subtitulo "Isolation & Glassmorphism" tamanho: "1.4rem"
+  linha disposicao: "flex" direcao: "linha" espacamento: "16"
+    cartao estilo classe: "w-metade"
+      estilo posicao: "relativo" largura: "100%" altura: "150px" fundo: "var(--gradiente-hero)" raio: "var(--raio)" isolamento: "isolate"
+      estilo classe: "absoluto vidro" padding: "16px" topo: "16px" esquerda: "16px" direita: "16px" raio: "var(--raio)"
+        texto "Efeito Vidro (Glassmorphism) com backdrop-filter e isolation"
+}
+
+secao "Componentes" {
+  titulo "Novos Componentes" tamanho: "2rem"
+
+  subtitulo "Grupo de Input" tamanho: "1.4rem"
+  linha disposicao: "flex" direcao: "linha" espacamento: "8" estilo classe: "entrada-grupo"
+    entrada tipo: "email" placeholder: "o seu email" estilo classe: "entrada"
+    botao "Subscrever" estilo classe: "botao"
+
+  subtitulo "Cartão Horizontal" tamanho: "1.4rem"
+  cartao estilo classe: "cartao-horizontal"
+    estilo largura: "200px" altura: "150px" fundo: "var(--gradiente-colorido)" raio: "var(--raio-lg)"
+    coluna
+      subtitulo "Cartão Horizontal"
+      texto "Com imagem à esquerda e conteúdo à direita. Ideal para listas de artigos, produtos ou perfis."
+      botao "Ver mais" estilo classe: "botao-sm botao-outline"
+
+  subtitulo "Navegação Vertical" tamanho: "1.4rem"
+  linha disposicao: "flex" direcao: "linha" espacamento: "24"
+    estilo classe: "nav nav-coluna borda raio" padding: "16px"
+      estilo classe: "nav-link nav-link-ativo" "Dashboard"
+      estilo classe: "nav-link" "Perfil"
+      estilo classe: "nav-link" "Definições"
+      estilo classe: "nav-link" "Ajuda"
+    cartao estilo classe: "flex-1"
+      subtitulo "Conteúdo da Página"
+      texto "Navegação lateral com nav-link activo destacado e hover suave."
+}
+
+secao "Utilitarios" {
+  titulo "Utilitários Tailwind-style" tamanho: "2rem"
+  subtitulo "Mais de 150 classes utilitárias"
+
+  grade colunas: 3
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Flex & Grid"
+      texto "d-flex, d-grid, flex-1, flex-col, items-center, justify-between, gap-*, grid-cols-*, col-span-*, grid-flow-*"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Espaçamento"
+      texto "p-*, px-*, py-*, pt-*, pb-*, m-*, mx-*, my-*, mt-*, mb-*, ml-*, mr-* com tokens de 0 a 16"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Dimensões"
+      texto "w-full, w-max, w-metade, w-tela, w-min, w-max-conteudo, h-full, h-dvh, h-tela, aspect-*"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Tipografia"
+      texto "text-xs a text-5xl, font-*, text-maiusculas, text-mono, leading-*, tracking-*, truncate, quebra-*"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Cores"
+      texto "c-texto, c-acento, c-info, c-sucesso, c-aviso, c-erro, c-rosa, c-roxo, bg-fundo, bg-subtil, bg-*"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Efeitos"
+      texto "sombra-*, vidro, vidro-forte, filtro-*, animar-* (15 tipos), hover:*, active:*, transicao-*"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Bordas"
+      texto "borda, borda-forte, borda-t/b/l/r, borda-2, borda-acento, borda-erro, borda-pontilhada, raio-* direccionais"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Posição & Z"
+      texto "relativo, absoluto, fixo, sticky, inset-0, topo-0, direita-0, z-0 a z-999, op-* (10 níveis)"
+    cartao estilo classe: "cartao-borda"
+      subtitulo "Responsivo"
+      texto "mobile-only, tablet-only, desktop-only, hide-mobile, hide-phone, print-only, grid adaptável"
+}
+
+secao "Animacoes" {
+  titulo "Animações" tamanho: "2rem"
+
+  linha disposicao: "flex" direcao: "linha" espacamento: "16" estilo classe: "flex-wrap"
+    estilo classe: "cartao animar-subir" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "entrar-baixo"
+    estilo classe: "cartao animar-descer" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "entrar-cima"
+    estilo classe: "cartao animar-esquerda" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "entrar-esquerda"
+    estilo classe: "cartao animar-direita" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "entrar-direita"
+    estilo classe: "cartao animar-escalar" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "escalar"
+    estilo classe: "cartao animar-pulsar" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "pulsar (infinito)"
+    estilo classe: "cartao animar-balancar" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "balancar"
+    estilo classe: "cartao animar-flutuar" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "flutuar"
+    estilo classe: "cartao animar-revelar" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "revelar"
+    estilo classe: "cartao animar-aparecer-escalar" padding: "24px" fundo: "var(--fundo-subtil)" raio: "var(--raio)"
+    texto "aparecer-escalar"
+}
+
+secao "Rodape" {
+  linha disposicao: "flex" direcao: "coluna" espacamento: "8" estilo classe: "text-centro"
+  texto "Portugol.js — Design System v5"
+  texto "Feito com ❤️ em Portugol" tamanho: "0.85rem" estilo classe: "c-texto3"
+}

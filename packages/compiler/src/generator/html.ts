@@ -78,23 +78,113 @@ export function resolverIcone(nome: string): string | null {
   return svg
 }
 
+// â”€â”€â”€ Ambiente de variÃ¡veis para HTML dinÃ¢mico â”€â”€â”€
+
+class Ambiente {
+  private variaveis: Map<string, any> = new Map()
+  private pai?: Ambiente
+
+  constructor(pai?: Ambiente) {
+    this.pai = pai
+  }
+
+  definir(nome: string, valor: any) { this.variaveis.set(nome, valor) }
+
+  obter(nome: string): any {
+    if (this.variaveis.has(nome)) return this.variaveis.get(nome)
+    if (this.pai) return this.pai.obter(nome)
+    return undefined
+  }
+
+  atribuir(nome: string, valor: any) {
+    if (this.variaveis.has(nome)) { this.variaveis.set(nome, valor); return }
+    if (this.pai) { this.pai.atribuir(nome, valor); return }
+    this.variaveis.set(nome, valor)
+  }
+}
+
+function avaliarExpr(expr: Expressao, env: Ambiente): any {
+  switch (expr.tipo) {
+    case "Str":  return expr.valor
+    case "Num":  return isNaN(Number(expr.valor)) ? expr.valor : Number(expr.valor)
+    case "Bool": return expr.valor
+    case "Nulo": return null
+    case "Ident": return env.obter(expr.nome) ?? expr.nome
+    case "Array": return expr.elementos.map((e) => avaliarExpr(e, env))
+    case "Unaria": {
+      const v = avaliarExpr(expr.expr, env)
+      if (expr.oper === "!") return !truthy(v)
+      if (expr.oper === "-") return -Number(v)
+      return v
+    }
+    case "Binaria": {
+      if (expr.oper === "&&" || expr.oper === "e") return truthy(avaliarExpr(expr.esq, env)) && truthy(avaliarExpr(expr.dir, env))
+      if (expr.oper === "||" || expr.oper === "ou") return truthy(avaliarExpr(expr.esq, env)) || truthy(avaliarExpr(expr.dir, env))
+      const esq = avaliarExpr(expr.esq, env)
+      const dir = avaliarExpr(expr.dir, env)
+      switch (expr.oper) {
+        case "+":  return typeof esq === "string" || typeof dir === "string" ? String(esq) + String(dir) : Number(esq) + Number(dir)
+        case "-":  return Number(esq) - Number(dir)
+        case "*":  return Number(esq) * Number(dir)
+        case "/":  return dir !== 0 ? Number(esq) / Number(dir) : 0
+        case "%":  return Number(esq) % Number(dir)
+        case "==": return esq == dir
+        case "!=": return esq != dir
+        case ">":  return esq > dir; case "<":  return esq < dir
+        case ">=": return esq >= dir; case "<=": return esq <= dir
+        default:   return esq
+      }
+    }
+    case "Chamada": {
+      const fn = env.obter(expr.nome)
+      if (typeof fn === "function") return fn(...expr.args.map((a) => avaliarExpr(a, env)))
+      return undefined
+    }
+  }
+  return undefined
+}
+
+function truthy(val: any): boolean {
+  if (val === false || val === null || val === undefined || val === 0 || val === "") return false
+  if (val === "falso") return false
+  if (val === "verdadeiro") return true
+  return true
+}
+
+function interpolador(str: string, env: Ambiente): string {
+  return str.replace(/\{(\w+)\}/g, (_, nome) => {
+    const val = env.obter(nome)
+    if (val === undefined) return `{${nome}}`
+    if (Array.isArray(val)) return val.join(", ")
+    return String(val)
+  })
+}
+
 // â”€â”€â”€ Gerador principal â”€â”€â”€
 
 export function gerarHTML(ast: No[]): SaidaHTML {
+  const env = new Ambiente()
+  // FunÃ§Ãµes built-in para uso em HTML dinÃ¢mico
+  env.definir("tamanho", (x: any) => typeof x === "string" || Array.isArray(x) ? x.length : String(x).length)
+  env.definir("numero", (x: any) => Number(x))
+  env.definir("texto", (x: any) => String(x))
+  env.definir("tipo", (x: any) => { if (x === null) return "nulo"; if (Array.isArray(x)) return "lista"; return typeof x })
+  env.definir("aleatorio", (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min)
+  env.definir("abs", (n: number) => Math.abs(n))
+  env.definir("arredondar", (n: number) => Math.round(n))
+
   const paginas = ast.filter((n) => n.tipo === "Pagina") as (No & { tipo: "Pagina" })[]
 
   if (paginas.length === 0) {
-    // Se nÃ£o tem pagina, trata tudo como corpo de uma pÃ¡gina anÃ³nima
-    const corpo = gerarCorpoHTML(ast, 2)
+    const corpo = gerarCorpoHTML(ast, 2, env)
     return {
       html: montarDocumento("Portugol", corpo),
       css: gerarCSS(),
     }
   }
 
-  // Gera para a primeira pÃ¡gina (MVP: uma pÃ¡gina por ficheiro)
   const pagina = paginas[0]
-  const corpo = gerarCorpoHTML(pagina.corpo, 2)
+  const corpo = gerarCorpoHTML(pagina.corpo, 2, env)
   return {
     html: montarDocumento(pagina.nome, corpo),
     css: gerarCSS(),
@@ -118,6 +208,17 @@ function montarDocumento(titulo: string, corpo: string): string {
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+<script>
+// Portugol.js — Helpers de interacÃ§Ã£o
+function mostrar(id){var e=document.querySelector(id);if(e)e.style.display=''}
+function esconder(id){var e=document.querySelector(id);if(e)e.style.display='none'}
+function alternar(id){var e=document.querySelector(id);if(e)e.style.display=e.style.display==='none'?'':e.style.display===''?'none':e.style.display||'none'}
+function texto(id,v){var e=document.querySelector(id);if(e)e.textContent=v}
+function html(id,v){var e=document.querySelector(id);if(e)e.innerHTML=v}
+function classe(id,a){var e=document.querySelector(id);if(e)a.includes('+')?e.classList.add(a.slice(1)):a.startsWith('-')?e.classList.remove(a.slice(1)):e.toggle(a)}
+function navegar(u){window.location.href=u}
+function alerta(m){alert(m)}
+</script>
 ${corpo}
 </body>
 </html>`
@@ -125,85 +226,188 @@ ${corpo}
 
 // â”€â”€â”€ Gerar corpo HTML recursivo â”€â”€â”€
 
-function gerarCorpoHTML(nos: No[], indent: number): string {
-  return nos.map((no) => gerarNoHTML(no, indent)).join("\n")
+function gerarCorpoHTML(nos: No[], indent: number, env: Ambiente): string {
+  const partes: string[] = []
+  for (const no of nos) {
+    // NÃ³s de controlo processam-se internamente (podem gerar mÃºltiplos filhos)
+    const resultado = gerarNoHTML(no, indent, env)
+    if (resultado !== undefined) partes.push(resultado)
+  }
+  return partes.join("\n")
 }
 
-function gerarNoHTML(no: No, indent: number): string {
+function gerarEventos(estilos?: Estilos): string {
+  if (!estilos) return ""
+  const eventos: string[] = []
+  if (estilos.ao_clicar) eventos.push(`onclick="${escaparAttr(estilos.ao_clicar)}"`)
+  if (estilos.ao_mudar) eventos.push(`onchange="${escaparAttr(estilos.ao_mudar)}"`)
+  if (estilos.ao_focar) eventos.push(`onfocus="${escaparAttr(estilos.ao_focar)}"`)
+  if (estilos.ao_desfocar) eventos.push(`onblur="${escaparAttr(estilos.ao_desfocar)}"`)
+  if (estilos.ao_submeter) eventos.push(`onsubmit="event.preventDefault();${escaparAttr(estilos.ao_submeter)}"`)
+  return eventos.length > 0 ? " " + eventos.join(" ") : ""
+}
+
+function escaparAttr(s: string): string {
+  return s.replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
+function gerarNoHTML(no: No, indent: number, env: Ambiente): string | undefined {
   const pad = "  ".repeat(indent)
+  const MAX_LOOP = 1000
 
   switch (no.tipo) {
+    // NÃ³s de controlo — executam mas nÃ£o produzem HTML directamente
+    case "Variavel": {
+      const valor = no.valor ? avaliarExpr(no.valor, env) : undefined
+      env.definir(no.nome, valor)
+      return undefined
+    }
+    case "Atribuir": {
+      const valor = avaliarExpr(no.valor, env)
+      env.atribuir(no.nome, valor)
+      return undefined
+    }
+    case "Se": {
+      if (truthy(avaliarExpr(no.condicao, env))) {
+        return gerarCorpoHTML(no.entao, indent, new Ambiente(env))
+      }
+      const senaoSe = (no as any).senaoSe as { condicao: Expressao; corpo: No[] }[] | undefined
+      if (senaoSe) {
+        for (const ramo of senaoSe) {
+          if (truthy(avaliarExpr(ramo.condicao, env))) {
+            return gerarCorpoHTML(ramo.corpo, indent, new Ambiente(env))
+          }
+        }
+      }
+      if (no.senao.length > 0) {
+        return gerarCorpoHTML(no.senao, indent, new Ambiente(env))
+      }
+      return undefined
+    }
+    case "Enquanto": {
+      let iter = 0
+      const partes: string[] = []
+      while (truthy(avaliarExpr(no.condicao, env))) {
+        if (++iter > MAX_LOOP) break
+        const res = gerarCorpoHTML(no.corpo, indent, new Ambiente(env))
+        if (res) partes.push(res)
+      }
+      return partes.join("\n") || undefined
+    }
+    case "Para": {
+      let inicio = Number(avaliarExpr(no.inicio, env))
+      const ate = Number(avaliarExpr(no.ate, env))
+      const passo = no.passo ? Number(avaliarExpr(no.passo, env)) : 1
+      let iter = 0
+      const partes: string[] = []
+      for (let i = inicio; passo > 0 ? i <= ate : i >= ate; i += passo) {
+        if (++iter > MAX_LOOP) break
+        const escopo = new Ambiente(env)
+        escopo.definir(no.variavel, i)
+        const res = gerarCorpoHTML(no.corpo, indent, escopo)
+        if (res) partes.push(res)
+      }
+      return partes.join("\n") || undefined
+    }
+    case "ParaCada": {
+      const colecao = env.obter(no.colecao)
+      if (!Array.isArray(colecao)) return undefined
+      let iter = 0
+      const partes: string[] = []
+      for (const item of colecao) {
+        if (++iter > MAX_LOOP) break
+        const escopo = new Ambiente(env)
+        escopo.definir(no.variavel, item)
+        const res = gerarCorpoHTML(no.corpo, indent, escopo)
+        if (res) partes.push(res)
+      }
+      return partes.join("\n") || undefined
+    }
+    case "Escrever":
+      // Em HTML, escrever Ã© ignorado (sem console)
+      return undefined
+    case "Funcao":
+    case "Retornar":
+    case "Parar":
+    case "Continuar":
+    case "Escolher":
+    case "Rota":
+    case "Modelo":
     case "Pagina":
-      return gerarCorpoHTML(no.corpo, indent)
+      // NÃ³s sem output HTML directo
+      if (no.tipo === "Pagina") return gerarCorpoHTML(no.corpo, indent, env)
+      return undefined
 
     case "Secao": {
       const cls = no.nome ? `secao secao-${slug(no.nome)}` : "secao"
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      const corpo = gerarCorpoHTML(no.corpo, indent + 1)
+      const corpo = gerarCorpoHTML(no.corpo, indent + 1, env)
       return `${pad}<section class="${classesComExtra(cls, no.estilos)}"${style}>\n${corpo}\n${pad}</section>`
     }
 
     case "Titulo": {
-      const conteudo = expressaoParaTexto(no.valor)
-      const estilo = estilosParaTipografia(no.estilos)
+      const conteudo = expressaoParaTexto(no.valor, env)
+      const estilo = estilosParaTipografia(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       return `${pad}<h1 class="${classesComExtra('titulo', no.estilos)}"${style}>${conteudo}</h1>`
     }
 
     case "Texto": {
-      const conteudo = expressaoParaTexto(no.valor)
-      const estilo = estilosParaTipografia(no.estilos)
+      const conteudo = expressaoParaTexto(no.valor, env)
+      const estilo = estilosParaTipografia(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       return `${pad}<p class="${classesComExtra('texto', no.estilos)}"${style}>${conteudo}</p>`
     }
 
     case "Botao": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<button class="${classesComExtra('botao', no.estilos)}"${style}>${escaparHTML(no.label)}</button>`
+      const eventos = gerarEventos(no.estilos)
+      return `${pad}<button class="${classesComExtra('botao', no.estilos)}"${style}${eventos}>${escaparHTML(no.label)}</button>`
     }
 
     case "Entrada": {
-      let attrs = `type="${escaparHTML(no.tipoInput)}" class="entrada"` // entrada nao tem estilos p/ classe extra
+      let attrs = `type="${escaparHTML(no.tipoInput)}" class="entrada"`
       if (no.placeholder) attrs += ` placeholder="${escaparHTML(no.placeholder)}"`
       if (no.rotulo) attrs += ` aria-label="${escaparHTML(no.rotulo)}"`
-      return `${pad}<input ${attrs} />`
+      const eventos = gerarEventos() // entrada nao tem estilos
+      return `${pad}<input ${attrs}${eventos} />`
     }
 
     case "Imagem": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       const alt = no.alt ? ` alt="${escaparHTML(no.alt)}"` : ' alt=""'
       return `${pad}<img src="${escaparHTML(no.origem)}"${alt} class="${classesComExtra('imagem', no.estilos)}"${style} />`
     }
 
     case "Linha": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      const corpo = gerarCorpoHTML(no.corpo, indent + 1)
+      const corpo = gerarCorpoHTML(no.corpo, indent + 1, env)
       return `${pad}<div class="${classesComExtra('linha', no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Coluna": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      const corpo = gerarCorpoHTML(no.corpo, indent + 1)
+      const corpo = gerarCorpoHTML(no.corpo, indent + 1, env)
       return `${pad}<div class="${classesComExtra('coluna', no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Grade": {
       const cls = no.colunas === 0 ? "grade grade-auto" : `grade grade-${no.colunas}`
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      const corpo = gerarCorpoHTML(no.corpo, indent + 1)
+      const corpo = gerarCorpoHTML(no.corpo, indent + 1, env)
       return `${pad}<div class="${classesComExtra(cls, no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Cartao": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      const corpo = gerarCorpoHTML(no.corpo, indent + 1)
+      const corpo = gerarCorpoHTML(no.corpo, indent + 1, env)
       return `${pad}<div class="${classesComExtra('cartao', no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
@@ -213,16 +417,15 @@ function gerarNoHTML(no: No, indent: number): string {
     }
 
     case "Subtitulo": {
-      const conteudo = expressaoParaTexto(no.valor)
-      const estilo = estilosParaTipografia(no.estilos)
+      const conteudo = expressaoParaTexto(no.valor, env)
+      const estilo = estilosParaTipografia(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       return `${pad}<h2 class="${classesComExtra('subtitulo', no.estilos)}"${style}>${conteudo}</h2>`
     }
 
     case "Icone": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      // Tenta resolver como Ã­cone Lucide; senÃ£o usa como emoji/texto
       const svg = resolverIcone(no.valor)
       if (svg) {
         return `${pad}<span class="${classesComExtra('icone lucide', no.estilos)}"${style} aria-hidden="true">${svg}</span>`
@@ -231,34 +434,33 @@ function gerarNoHTML(no: No, indent: number): string {
     }
 
     case "Ligacao": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       const externo = no.para.startsWith("http") ? ' target="_blank" rel="noopener noreferrer"' : ""
       return `${pad}<a href="${escaparHTML(no.para)}" class="${classesComExtra('ligacao', no.estilos)}"${style}${externo}>${escaparHTML(no.label)}</a>`
     }
 
     case "Distintivo": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       return `${pad}<span class="${classesComExtra('distintivo', no.estilos)}"${style}>${escaparHTML(no.label)}</span>`
     }
 
     case "Divisor": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       return `${pad}<hr class="${classesComExtra('divisor', no.estilos)}"${style} />`
     }
 
     case "Video": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
-      // Suporta YouTube, Vimeo e src directo
       const src = converterUrlVideo(no.origem)
-      return `${pad}<div class="video-contentor"${style}>\n${pad}  <iframe src="${escaparHTML(src)}" class="video" allowfullscreen loading="lazy" title="vÃ­deo"></iframe>\n${pad}</div>`
+      return `${pad}<div class="video-contentor"${style}>\n${pad}  <iframe src="${escaparHTML(src)}" class="video" allowfullscreen loading="lazy" title="vîdeo"></iframe>\n${pad}</div>`
     }
 
     case "Lista": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       const itens = no.itens
         .map((item) => `${pad}  <li class="lista-item">${escaparHTML(item)}</li>`)
@@ -267,30 +469,13 @@ function gerarNoHTML(no: No, indent: number): string {
     }
 
     case "Citacao": {
-      const estilo = estilosParaCSS(no.estilos)
+      const estilo = estilosParaCSS(no.estilos, env)
       const style = estilo ? ` style="${estilo}"` : ""
       const autor = no.autor
         ? `\n${pad}  <cite class="citacao-autor">â€” ${escaparHTML(no.autor)}</cite>`
         : ""
       return `${pad}<blockquote class="${classesComExtra('citacao', no.estilos)}"${style}>\n${pad}  <p>${escaparHTML(no.texto)}</p>${autor}\n${pad}</blockquote>`
     }
-
-    // NÃ³s nÃ£o-visuais: ignorar no HTML
-    case "Funcao":
-    case "Se":
-    case "Enquanto":
-    case "Escolher":
-    case "ParaCada":
-    case "Para":
-    case "Atribuir":
-    case "Variavel":
-    case "Rota":
-    case "Modelo":
-    case "Retornar":
-    case "Parar":
-    case "Continuar":
-    case "Escrever":
-      return `${pad}<!-- ${no.tipo}: nÃ£o suportado em HTML estÃ¡tico -->`
 
     default:
       return ""
@@ -306,43 +491,86 @@ function classesComExtra(base: string, estilos?: Estilos): string {
   return `${base} ${estilos.classe}`
 }
 
-function estilosParaCSS(estilos?: Estilos): string {
+function interpolarCSS(valor: string, env: Ambiente): string {
+  return valor.replace(/\{(\w+)\}/g, (_, nome) => {
+    const v = env.obter(nome)
+    return v !== undefined ? String(v) : `{${nome}}`
+  })
+}
+
+function estilosParaCSS(estilos?: Estilos, env?: Ambiente): string {
   if (!estilos) return ""
+  const interp = env ? (v: string) => interpolarCSS(v, env) : (v: string) => v
   const partes: string[] = []
 
-  if (estilos.cor) partes.push(`color: ${estilos.cor}`)
-  if (estilos.fundo) partes.push(`background: ${estilos.fundo}`)
-  if (estilos.largura) partes.push(`width: ${unidadeCSS(estilos.largura)}`)
-  if (estilos.altura) partes.push(`height: ${unidadeCSS(estilos.altura)}`)
-  if (estilos.padding) partes.push(`padding: ${unidadeCSS(estilos.padding)}`)
-  if (estilos.margem) partes.push(`margin: ${unidadeCSS(estilos.margem)}`)
-  if (estilos.borda) partes.push(`border: ${estilos.borda}`)
-  if (estilos.raio) partes.push(`border-radius: ${unidadeCSS(estilos.raio)}`)
-  if (estilos.sombra) partes.push(`box-shadow: ${estilos.sombra}`)
-  if (estilos.opacidade) partes.push(`opacity: ${estilos.opacidade}`)
-  if (estilos.espacamento) partes.push(`gap: ${unidadeCSS(estilos.espacamento)}`)
-  if (estilos.justificar) partes.push(`justify-content: ${traduzirAlinhamento(estilos.justificar)}`)
+  // Cores & Fundo
+  if (estilos.cor) partes.push(`color: ${interp(estilos.cor)}`)
+  if (estilos.fundo) partes.push(`background: ${interp(estilos.fundo)}`)
+  if (estilos.fundo_imagem) partes.push(`background-image: ${interp(estilos.fundo_imagem)}`)
+  if (estilos.fundo_tamanho) partes.push(`background-size: ${interp(estilos.fundo_tamanho)}`)
+  if (estilos.fundo_repetir) partes.push(`background-repeat: ${interp(estilos.fundo_repetir)}`)
+  if (estilos.fundo_posicao) partes.push(`background-position: ${interp(estilos.fundo_posicao)}`)
+  if (estilos.fundo_anexo) partes.push(`background-attachment: ${interp(estilos.fundo_anexo)}`)
+  // Box Model
+  if (estilos.largura) partes.push(`width: ${unidadeCSS(interp(estilos.largura))}`)
+  if (estilos.altura) partes.push(`height: ${unidadeCSS(interp(estilos.altura))}`)
+  if (estilos.largura_min) partes.push(`min-width: ${unidadeCSS(interp(estilos.largura_min))}`)
+  if (estilos.largura_max) partes.push(`max-width: ${unidadeCSS(interp(estilos.largura_max))}`)
+  if (estilos.altura_min) partes.push(`min-height: ${unidadeCSS(interp(estilos.altura_min))}`)
+  if (estilos.altura_max) partes.push(`max-height: ${unidadeCSS(interp(estilos.altura_max))}`)
+  if (estilos.padding) partes.push(`padding: ${unidadeCSS(interp(estilos.padding))}`)
+  if (estilos.margem) partes.push(`margin: ${unidadeCSS(interp(estilos.margem))}`)
+  // Borda & Raio
+  if (estilos.borda) partes.push(`border: ${interp(estilos.borda)}`)
+  if (estilos.raio) partes.push(`border-radius: ${unidadeCSS(interp(estilos.raio))}`)
+  if (estilos.sombra) partes.push(`box-shadow: ${interp(estilos.sombra)}`)
+  // Layout
+  if (estilos.disposicao) partes.push(`display: ${interp(estilos.disposicao)}`)
+  if (estilos.direcao) partes.push(`flex-direction: ${traduzirDirecao(interp(estilos.direcao))}`)
+  if (estilos.espacamento) partes.push(`gap: ${unidadeCSS(interp(estilos.espacamento))}`)
+  if (estilos.justificar) partes.push(`justify-content: ${traduzirAlinhamento(interp(estilos.justificar))}`)
   if (estilos.centralizar) {
     partes.push("display: flex", "justify-content: center", "align-items: center", "flex-direction: column")
   }
+  if (estilos.posicao) partes.push(`position: ${interp(estilos.posicao)}`)
+  if (estilos.topo) partes.push(`top: ${unidadeCSS(interp(estilos.topo))}`)
+  if (estilos.direita) partes.push(`right: ${unidadeCSS(interp(estilos.direita))}`)
+  if (estilos.baixo) partes.push(`bottom: ${unidadeCSS(interp(estilos.baixo))}`)
+  if (estilos.esquerda) partes.push(`left: ${unidadeCSS(interp(estilos.esquerda))}`)
+  if (estilos.indice_z) partes.push(`z-index: ${interp(estilos.indice_z)}`)
   // Tipografia
-  if (estilos.tamanho) partes.push(`font-size: ${unidadeCSS(estilos.tamanho)}`)
-  if (estilos.peso) partes.push(`font-weight: ${estilos.peso}`)
-  if (estilos.alinhamento) partes.push(`text-align: ${traduzirAlinhamento(estilos.alinhamento)}`)
-  // Novos
-  if (estilos.animacao) partes.push(`animation: ${estilos.animacao}`)
-  if (estilos.cursor) partes.push(`cursor: ${estilos.cursor}`)
-  if (estilos.overflow) partes.push(`overflow: ${estilos.overflow}`)
-  if (estilos.transicao) partes.push(`transition: ${estilos.transicao}`)
-  if (estilos.decoracao) partes.push(`text-decoration: ${estilos.decoracao}`)
-  if (estilos.maiusculas) partes.push(`text-transform: ${estilos.maiusculas}`)
+  if (estilos.tamanho) partes.push(`font-size: ${unidadeCSS(interp(estilos.tamanho))}`)
+  if (estilos.peso) partes.push(`font-weight: ${interp(estilos.peso)}`)
+  if (estilos.fonte) partes.push(`font-family: ${interp(estilos.fonte)}`)
+  if (estilos.alinhamento) partes.push(`text-align: ${traduzirAlinhamento(interp(estilos.alinhamento))}`)
+  if (estilos.decoracao) partes.push(`text-decoration: ${interp(estilos.decoracao)}`)
+  if (estilos.maiusculas) partes.push(`text-transform: ${interp(estilos.maiusculas)}`)
+  if (estilos.animacao) partes.push(`animation: ${interp(estilos.animacao)}`)
+  if (estilos.transicao) partes.push(`transition: ${interp(estilos.transicao)}`)
+  // Efeitos visuais
+  if (estilos.opacidade) partes.push(`opacity: ${interp(estilos.opacidade)}`)
+  if (estilos.transformar) partes.push(`transform: ${interp(estilos.transformar)}`)
+  if (estilos.filtro) partes.push(`filter: ${interp(estilos.filtro)}`)
+  if (estilos.translucido) partes.push(`backdrop-filter: ${interp(estilos.translucido)}`)
+  if (estilos.mascara) partes.push(`clip-path: ${interp(estilos.mascara)}`)
+  if (estilos.combinar) partes.push(`mix-blend-mode: ${interp(estilos.combinar)}`)
+  if (estilos.isolamento) partes.push(`isolation: ${interp(estilos.isolamento)}`)
+  // Object / Aspect
+  if (estilos.encaixe) partes.push(`object-fit: ${interp(estilos.encaixe)}`)
+  if (estilos.aspecto) partes.push(`aspect-ratio: ${interp(estilos.aspecto)}`)
+  // Comportamento
+  if (estilos.cursor) partes.push(`cursor: ${interp(estilos.cursor)}`)
+  if (estilos.overflow) partes.push(`overflow: ${interp(estilos.overflow)}`)
+  if (estilos.rolagem_x) partes.push(`overflow-x: ${interp(estilos.rolagem_x)}`)
+  if (estilos.rolagem_y) partes.push(`overflow-y: ${interp(estilos.rolagem_y)}`)
+  if (estilos.redimensionar) partes.push(`resize: ${interp(estilos.redimensionar)}`)
 
   return partes.join("; ")
 }
 
-function estilosParaTipografia(estilos?: Estilos): string {
+function estilosParaTipografia(estilos?: Estilos, env?: Ambiente): string {
   if (!estilos) return ""
-  return estilosParaCSS(estilos)
+  return estilosParaCSS(estilos, env)
 }
 
 // â”€â”€â”€ UtilitÃ¡rios â”€â”€â”€
@@ -363,15 +591,26 @@ function traduzirAlinhamento(valor: string): string {
     fim: "flex-end",
     entre: "space-between",
     ao_redor: "space-around",
+    igual: "space-evenly",
   }
   return mapa[valor] ?? valor
 }
 
-function expressaoParaTexto(expr: Expressao): string {
-  if (expr.tipo === "Str") return escaparHTML(expr.valor)
+function traduzirDirecao(valor: string): string {
+  const mapa: Record<string, string> = {
+    linha: "row",
+    coluna: "column",
+    linha_reversa: "row-reverse",
+    coluna_reversa: "column-reverse",
+  }
+  return mapa[valor] ?? valor
+}
+
+function expressaoParaTexto(expr: Expressao, env?: Ambiente): string {
+  if (expr.tipo === "Str") return env ? escaparHTML(interpolador(expr.valor, env)) : escaparHTML(expr.valor)
   if (expr.tipo === "Num") return expr.valor
   if (expr.tipo === "Bool") return expr.valor ? "verdadeiro" : "falso"
-  if (expr.tipo === "Ident") return escaparHTML(expr.nome)
+  if (expr.tipo === "Ident") return env ? escaparHTML(String(env.obter(expr.nome) ?? expr.nome)) : escaparHTML(expr.nome)
   return ""
 }
 
@@ -410,18 +649,26 @@ function escaparHTML(str: string): string {
 
 function gerarCSS(): string {
   return `/* ═══════════════════════════════════════════════════════════
-   Portugol.js — Design System v4 (Tailwind-style)
+   Portugol.js — Design System v5 (Tailwind-style)
    by Eketiandro Gonçalo
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── Reset ─── */
+/* ─── Reset melhorado ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; hanging-punctuation: first; }
 body { font-family: var(--fonte-ui); color: var(--texto); background: var(--fundo); line-height: 1.6; overflow-x: hidden; min-height: 100dvh; }
 img, video, canvas, svg { max-width: 100%; height: auto; display: block; }
 a { color: inherit; text-decoration: inherit; }
 button { cursor: pointer; font: inherit; color: inherit; }
 ul, ol { list-style: none; }
+fieldset { border: none; }
+legend { padding: 0; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 2px; }
+
+/* ─── Acessibilidade ─── */
+.skip-link { position: absolute; top: -100%; left: 8px; padding: 8px 16px; background: var(--acento); color: var(--texto-inv); border-radius: var(--raio); z-index: 9999; }
+.skip-link:focus { top: 8px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 /* ─── Design Tokens ─── */
 :root {
@@ -442,13 +689,19 @@ ul, ol { list-style: none; }
   --sucesso:         #22c55e;
   --aviso:           #f59e0b;
   --erro:            #ef4444;
+  --rosa:            #ec4899;
+  --roxo:            #8b5cf6;
+  --laranja:         #f97316;
+  --ciano:           #06b6d4;
   --gradiente-hero:  linear-gradient(160deg, #fafafa 0%, #ffffff 40%, #f5f5f7 100%);
   --gradiente-acento: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   --gradiente-colorido: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+  --gradiente-ouro:  linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --gradiente-mar:   linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
   --brilho:          rgba(255,255,255,0.6);
-  --fonte-display:   'Cormorant Garamond', Georgia, serif;
-  --fonte-ui:        'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --fonte-mono:      'JetBrains Mono', 'Fira Code', monospace;
+  --fonte-display:   'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --fonte-ui:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --fonte-mono:      'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   --raio-sm: 6px; --raio: 10px; --raio-lg: 16px; --raio-xl: 24px; --raio-full: 9999px;
   --sombra-xs: 0 1px 2px rgba(0,0,0,0.04);
   --sombra-sm: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
@@ -458,29 +711,45 @@ ul, ol { list-style: none; }
   --sombra-xl: 0 32px 80px rgba(0,0,0,0.13), 0 12px 24px rgba(0,0,0,0.07);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --dur-fast: 120ms; --dur: 220ms; --dur-slow: 380ms;
-  --max: 1200px; --padding-x: clamp(20px, 5vw, 48px);
-  --espaco-1: 4px; --espaco-2: 8px; --espaco-3: 12px; --espaco-4: 16px;
-  --espaco-5: 24px; --espaco-6: 32px; --espaco-8: 48px; --espaco-10: 64px; --espaco-12: 80px;
+  --max: 1200px; --max-texto: 720px; --padding-x: clamp(20px, 5vw, 48px);
+  --espaco-0: 0; --espaco-1: 4px; --espaco-2: 8px; --espaco-3: 12px; --espaco-4: 16px;
+  --espaco-5: 24px; --espaco-6: 32px; --espaco-8: 48px; --espaco-10: 64px; --espaco-12: 80px; --espaco-16: 120px;
 }
 
-/* ─── Dark mode (sistema + classe manual) ─── */
+/* ─── Tema escuro (sistema + classe manual) ─── */
 @media (prefers-color-scheme: dark) {
   :root, :root.light { --fundo: #080810; --fundo-elevado: #0e0e18; --fundo-subtil: #14141f; --superfice: #1a1a28; --borda: rgba(255,255,255,0.07); --borda-forte: rgba(255,255,255,0.13); --texto: #f0f0f8; --texto-2: #c4c4d4; --texto-3: #8888aa; --texto-inv: #080810; --acento: #e8e8ff; --acento-hover: #ffffff; --acento-suave: rgba(232,232,255,0.08); --gradiente-hero: linear-gradient(160deg, #080810 0%, #0e0e1a 50%, #080810 100%); --brilho: rgba(255,255,255,0.03); --sombra-sm: 0 2px 8px rgba(0,0,0,0.5); --sombra-md: 0 8px 32px rgba(0,0,0,0.6); --sombra-lg: 0 20px 60px rgba(0,0,0,0.7); --sombra-xl: 0 32px 80px rgba(0,0,0,0.8); }
 }
 :root.dark { --fundo: #080810; --fundo-elevado: #0e0e18; --fundo-subtil: #14141f; --superfice: #1a1a28; --borda: rgba(255,255,255,0.07); --borda-forte: rgba(255,255,255,0.13); --texto: #f0f0f8; --texto-2: #c4c4d4; --texto-3: #8888aa; --texto-inv: #080810; --acento: #e8e8ff; --acento-hover: #ffffff; --acento-suave: rgba(232,232,255,0.08); --gradiente-hero: linear-gradient(160deg, #080810 0%, #0e0e1a 50%, #080810 100%); --brilho: rgba(255,255,255,0.03); --sombra-sm: 0 2px 8px rgba(0,0,0,0.5); --sombra-md: 0 8px 32px rgba(0,0,0,0.6); --sombra-lg: 0 20px 60px rgba(0,0,0,0.7); --sombra-xl: 0 32px 80px rgba(0,0,0,0.8); }
 :root.light { --fundo: #ffffff; --fundo-elevado: #fafafa; --fundo-subtil: #f4f4f5; --superfice: #ffffff; --borda: rgba(0,0,0,0.07); --borda-forte: rgba(0,0,0,0.13); --texto: #0a0a0a; --texto-2: #3f3f46; --texto-3: #71717a; --texto-inv: #ffffff; --acento: #0a0a0a; --acento-hover: #27272a; --acento-suave: rgba(10,10,10,0.05); --gradiente-hero: linear-gradient(160deg, #fafafa 0%, #ffffff 40%, #f5f5f7 100%); --brilho: rgba(255,255,255,0.6); --sombra-sm: 0 2px 8px rgba(0,0,0,0.06); --sombra-md: 0 8px 32px rgba(0,0,0,0.09); --sombra-lg: 0 20px 60px rgba(0,0,0,0.11); --sombra-xl: 0 32px 80px rgba(0,0,0,0.13); }
 
+/* ─── Movimento reduzido ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
 /* ═══════════════════════════════════════════════════════
    KEYFRAMES
    ═══════════════════════════════════════════════════════ */
 @keyframes entrar-baixo { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes entrar-cima { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes entrar-esquerda { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes entrar-direita { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
 @keyframes escalar { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
 @keyframes brilho-sweep { 0% { left: -100%; } 100% { left: 200%; } }
 @keyframes pulsar { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 @keyframes rodar { to { transform: rotate(360deg); } }
+@keyframes balancar { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(3deg); } 75% { transform: rotate(-3deg); } }
+@keyframes pular { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes revelar { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes digitar { from { width: 0; } }
+@keyframes flutuar { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+@keyframes aparecer-escalar { from { opacity: 0; transform: scale(0.8); filter: blur(4px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
+@keyframes vibrar { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
 
 /* ═══════════════════════════════════════════════════════
    COMPONENTES
@@ -494,7 +763,7 @@ ul, ol { list-style: none; }
 .secao-Hero::before { content: ''; position: absolute; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%); top: -200px; right: -100px; pointer-events: none; }
 .secao-Hero::after { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.04) 0%, transparent 70%); bottom: -100px; left: -100px; pointer-events: none; }
 .secao-Numeros { background: var(--fundo-subtil); padding: 64px var(--padding-x); }
-.secao-CTA { background: var(--gradiente-acento); border-radius: var(--raio-xl); margin: 0 var(--padding-x) 80px; max-width: calc(var(--max) - var(--padding-x) * 2); }
+.secao-CTA { background: var(--gradiente-acento); border-radius: var(--raio-xl); margin: 0 var(--padding-x) 80px; max-width: calc(var(--max) - var(--padding-x) * 2); container-type: inline-size; }
 .secao-CTA .titulo, .secao-CTA .subtitulo { color: rgba(255,255,255,0.96); }
 .secao-CTA .texto { color: rgba(255,255,255,0.65); }
 .secao-CTA .distintivo { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
@@ -508,9 +777,9 @@ ul, ol { list-style: none; }
 .secao-Testemunhas { background: var(--fundo-subtil); }
 
 /* ─── Títulos & Texto ─── */
-.titulo { font-family: var(--fonte-display); font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 600; line-height: 1.04; letter-spacing: -0.03em; color: var(--texto); margin-bottom: 16px; animation: entrar-baixo var(--dur-slow) var(--ease) both; }
-.subtitulo { font-family: var(--fonte-display); font-size: clamp(1.2rem, 2.5vw, 1.9rem); font-weight: 500; line-height: 1.25; letter-spacing: -0.015em; color: var(--texto-2); margin-bottom: 12px; }
-.texto { font-family: var(--fonte-ui); font-size: 1.05rem; line-height: 1.75; color: var(--texto-3); margin-bottom: 8px; }
+.titulo { font-family: var(--fonte-display); font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 600; line-height: 1.04; letter-spacing: -0.03em; color: var(--texto); margin-bottom: 16px; animation: entrar-baixo var(--dur-slow) var(--ease) both; max-width: var(--max-texto); }
+.subtitulo { font-family: var(--fonte-display); font-size: clamp(1.2rem, 2.5vw, 1.9rem); font-weight: 500; line-height: 1.25; letter-spacing: -0.015em; color: var(--texto-2); margin-bottom: 12px; max-width: var(--max-texto); }
+.texto { font-family: var(--fonte-ui); font-size: 1.05rem; line-height: 1.75; color: var(--texto-3); margin-bottom: 8px; max-width: 65ch; }
 
 /* ─── Botão ─── */
 .botao { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 28px; font-family: var(--fonte-ui); font-size: 0.9rem; font-weight: 500; letter-spacing: 0.01em; color: var(--texto-inv); background: var(--acento); border: 1px solid transparent; border-radius: var(--raio); cursor: pointer; text-decoration: none; white-space: nowrap; position: relative; overflow: hidden; transition: background var(--dur) var(--ease), transform var(--dur) var(--ease-spring), box-shadow var(--dur) var(--ease); -webkit-user-select: none; user-select: none; }
@@ -537,22 +806,29 @@ ul, ol { list-style: none; }
 /* Botão Tamanhos */
 .botao-sm { padding: 8px 16px; font-size: 0.8rem; border-radius: var(--raio-sm); }
 .botao-lg { padding: 16px 36px; font-size: 1.05rem; }
+.botao-icon { padding: 10px; line-height: 0; border-radius: var(--raio); }
 
 /* ─── Entrada ─── */
 .entrada { display: block; width: 100%; max-width: 400px; padding: 12px 16px; font-family: var(--fonte-ui); font-size: 1rem; color: var(--texto); background: var(--fundo); border: 1px solid var(--borda-forte); border-radius: var(--raio); transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); outline: none; appearance: none; }
 .entrada::placeholder { color: var(--texto-3); }
 .entrada:hover { border-color: var(--texto-3); }
 .entrada:focus { border-color: var(--acento); box-shadow: 0 0 0 3px var(--acento-suave); }
+.entrada:disabled { opacity: 0.5; cursor: not-allowed; background: var(--fundo-subtil); }
 .entrada-erro { border-color: var(--erro); }
 .entrada-erro:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
 .entrada-sucesso { border-color: var(--sucesso); }
 .entrada-sucesso:focus { box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
+textarea.entrada { resize: vertical; min-height: 100px; }
+select.entrada { appearance: auto; }
 
 /* ─── Imagem ─── */
 .imagem { width: 100%; height: auto; border-radius: var(--raio-lg); object-fit: cover; }
 .imagem-redonda { border-radius: var(--raio-full); }
 .imagem-sombra { box-shadow: var(--sombra-md); }
 .imagem-borda { border: 1px solid var(--borda); }
+.imagem-contem { object-fit: contain; }
+.imagem-preencher { object-fit: fill; }
+.imagem-dimensionar { object-fit: scale-down; }
 
 /* ─── Layout ─── */
 .linha { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
@@ -566,9 +842,10 @@ ul, ol { list-style: none; }
 .grade-6 { grid-template-columns: repeat(6, 1fr); }
 .grade-auto { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .grade-auto-pq { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.grade-auto-gd { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
 
 /* ─── Cartão ─── */
-.cartao { background: var(--superfice); border: 1px solid var(--borda); border-radius: var(--raio-lg); padding: 32px; position: relative; overflow: hidden; transition: transform var(--dur) var(--ease-spring), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease); box-shadow: var(--sombra-sm); animation: escalar var(--dur-slow) var(--ease) both; }
+.cartao { background: var(--superfice); border: 1px solid var(--borda); border-radius: var(--raio-lg); padding: 32px; position: relative; overflow: hidden; transition: transform var(--dur) var(--ease-spring), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease); box-shadow: var(--sombra-sm); animation: escalar var(--dur-slow) var(--ease) both; container-type: inline-size; }
 .cartao::before { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(135deg, var(--brilho) 0%, transparent 50%); pointer-events: none; }
 .cartao::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); pointer-events: none; }
 .cartao:hover { transform: translateY(-4px) scale(1.005); box-shadow: var(--sombra-lg); border-color: var(--borda-forte); }
@@ -576,6 +853,7 @@ ul, ol { list-style: none; }
 .cartao .subtitulo { font-size: 1.1rem; margin-bottom: 8px; }
 .cartao .texto { font-size: 0.95rem; margin-bottom: 0; }
 .cartao .imagem { margin: -32px -32px 24px; width: calc(100% + 64px); max-width: none; border-radius: var(--raio-lg) var(--raio-lg) 0 0; }
+@container (max-width: 400px) { .cartao { padding: 20px; } .cartao .titulo { font-size: 1.2rem; } }
 
 /* Variantes de Cartão */
 .cartao-plano { box-shadow: none; border-color: var(--borda); background: transparent; animation: none; }
@@ -588,6 +866,9 @@ ul, ol { list-style: none; }
 .cartao-destaque::after { background: linear-gradient(90deg, transparent, var(--acento-suave), transparent); }
 .cartao-interativo { cursor: pointer; }
 .cartao-interativo:active { transform: translateY(-2px) scale(0.99); }
+.cartao-horizontal { display: flex; gap: 24px; align-items: center; }
+.cartao-horizontal .imagem { margin: 0; width: 200px; min-width: 200px; border-radius: var(--raio-lg); }
+.cartao-horizontal .coluna { flex: 1; }
 
 /* ─── Espaçador ─── */
 .espacador { display: block; flex-shrink: 0; }
@@ -611,9 +892,9 @@ ul, ol { list-style: none; }
 .ligacao:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; border-radius: 2px; }
 .ligacao-acento { color: var(--info); }
 .ligacao-acento:hover { color: var(--info); border-bottom-color: var(--info); }
-.ligacao-seta::after { content: ' →'; transition: transform var(--dur) var(--ease); display: inline-block; }
+.ligacao-seta::after { content: "→"; transition: transform var(--dur) var(--ease); display: inline-block; }
 .ligacao-seta:hover::after { transform: translateX(4px); }
-.ligacao-externo::after { content: ' ↗'; font-size: 0.8em; }
+.ligacao-externo::after { content: "↗"; font-size: 0.8em; }
 
 /* ─── Distintivo ─── */
 .distintivo { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; font-family: var(--fonte-ui); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--texto-2); background: var(--fundo-subtil); border: 1px solid var(--borda-forte); border-radius: var(--raio-full); white-space: nowrap; animation: aparecer var(--dur-slow) var(--ease) both; }
@@ -622,18 +903,24 @@ ul, ol { list-style: none; }
 .distintivo-sucesso { background: rgba(34,197,94,0.1); color: var(--sucesso); border-color: rgba(34,197,94,0.2); }
 .distintivo-aviso { background: rgba(245,158,11,0.1); color: var(--aviso); border-color: rgba(245,158,11,0.2); }
 .distintivo-erro { background: rgba(239,68,68,0.1); color: var(--erro); border-color: rgba(239,68,68,0.2); }
+.distintivo-rosa { background: rgba(236,72,153,0.1); color: var(--rosa); border-color: rgba(236,72,153,0.2); }
+.distintivo-roxo { background: rgba(139,92,246,0.1); color: var(--roxo); border-color: rgba(139,92,246,0.2); }
 .distintivo-sm { padding: 3px 10px; font-size: 0.65rem; }
 .distintivo-lg { padding: 8px 20px; font-size: 0.8rem; }
+.distintivo-pontilhado { border-style: dashed; }
 
 /* ─── Divisor ─── */
 .divisor { display: block; width: 100%; height: 1px; background: var(--borda); border: none; margin: 0; }
 .divisor-texto { display: flex; align-items: center; gap: 16px; color: var(--texto-3); font-size: 0.82rem; font-weight: 500; }
 .divisor-texto::before, .divisor-texto::after { content: ''; flex: 1; height: 1px; background: var(--borda); }
 .divisor-espaco { margin: var(--espaco-6) 0; }
+.divisor-vertical { width: 1px; height: auto; min-height: 24px; align-self: stretch; background: var(--borda); border: none; }
 
 /* ─── Vídeo ─── */
 .video-contentor { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: var(--raio-lg); overflow: hidden; background: var(--fundo-subtil); box-shadow: var(--sombra-md); }
 .video { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+.video-redondo { border-radius: var(--raio-full); }
+.video-quadrado { padding-bottom: 100%; }
 
 /* ─── Lista ─── */
 .lista { list-style: none; display: flex; flex-direction: column; gap: 10px; padding: 0; }
@@ -643,43 +930,89 @@ ul, ol { list-style: none; }
 .lista-ordenada { counter-reset: item; }
 .lista-ordenada .lista-item { counter-increment: item; }
 .lista-ordenada .lista-item::before { content: counter(item); width: auto; height: auto; min-width: 24px; background: var(--acento-suave); color: var(--acento); border-radius: var(--raio-sm); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; padding: 2px 0; margin-top: 0; }
+.lista-gap-sm { gap: 4px; }
+.lista-gap-lg { gap: 16px; }
+.lista-horizontal { flex-direction: row; flex-wrap: wrap; }
+.lista-horizontal .lista-item::before { margin-top: 10px; }
 
 /* ─── Citação ─── */
 .citacao { position: relative; padding: 32px; background: var(--fundo-subtil); border: 1px solid var(--borda); border-radius: var(--raio-lg); overflow: hidden; transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
 .citacao:hover { transform: translateY(-2px); box-shadow: var(--sombra-md); }
-.citacao::before { content: '"'; position: absolute; top: -16px; left: 20px; font-family: var(--fonte-display); font-size: 7rem; line-height: 1; color: var(--borda-forte); pointer-events: none; user-select: none; }
+.citacao::before { content: '\\201C'; position: absolute; top: -16px; left: 20px; font-family: var(--fonte-display); font-size: 7rem; line-height: 1; color: var(--borda-forte); pointer-events: none; user-select: none; }
 .citacao p { font-family: var(--fonte-display); font-size: 1.1rem; font-style: italic; line-height: 1.75; color: var(--texto); margin-bottom: 16px; position: relative; }
 .citacao-autor { display: block; font-family: var(--fonte-ui); font-size: 0.82rem; font-style: normal; font-weight: 500; color: var(--texto-3); letter-spacing: 0.02em; }
 .citacao-destaque { background: linear-gradient(135deg, var(--acento-suave) 0%, transparent 80%); border-left: 3px solid var(--acento); }
 .citacao-destaque::before { color: var(--acento); opacity: 0.2; }
 
+/* ─── Navegação ─── */
+.nav { display: flex; align-items: center; gap: 24px; }
+.nav-coluna { flex-direction: column; gap: 8px; }
+.nav-link { padding: 6px 0; font-size: 0.9rem; color: var(--texto-2); text-decoration: none; border-bottom: 1px solid transparent; transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.nav-link:hover { color: var(--texto); border-bottom-color: var(--texto); }
+.nav-link-ativo { color: var(--texto); border-bottom-color: var(--texto); font-weight: 500; }
+
+/* ─── Grupo de Entrada ─── */
+.entrada-grupo { display: flex; gap: 0; }
+.entrada-grupo .entrada { border-radius: var(--raio) 0 0 var(--raio); max-width: none; }
+.entrada-grupo .botao { border-radius: 0 var(--raio) var(--raio) 0; white-space: nowrap; }
+
 /* ═══════════════════════════════════════════════════════
-   UTILITÁRIOS (Tailwind-style)
+   UTILITÁRIOS (Tailwind-style v2)
    ═══════════════════════════════════════════════════════ */
 
-/* Display */
+/* ─── Display ─── */
 .d-bloco { display: block; }
 .d-flex { display: flex; }
 .d-inline-flex { display: inline-flex; }
 .d-grid { display: grid; }
 .d-inline { display: inline; }
+.d-inline-bloco { display: inline-block; }
 .d-oculto { display: none; }
+.d-conteudo { display: contents; }
 
-/* Flex */
+/* ─── Flex ─── */
 .flex-row { flex-direction: row; }
 .flex-col { flex-direction: column; }
+.flex-row-rev { flex-direction: row-reverse; }
+.flex-col-rev { flex-direction: column-reverse; }
 .flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
 .flex-1 { flex: 1; }
 .flex-auto { flex: 1 1 auto; }
 .flex-inicial { flex: 0 1 auto; }
 .flex-none { flex: none; }
+.crescer { flex-grow: 1; }
+.crescer-0 { flex-grow: 0; }
+.encolher { flex-shrink: 1; }
+.encolher-0 { flex-shrink: 0; }
 .items-center { align-items: center; }
 .items-start { align-items: flex-start; }
 .items-end { align-items: flex-end; }
+.items-stretch { align-items: stretch; }
+.items-baseline { align-items: baseline; }
 .justify-center { justify-content: center; }
 .justify-between { justify-content: space-between; }
 .justify-end { justify-content: flex-end; }
 .justify-start { justify-content: flex-start; }
+.justify-evenly { justify-content: space-evenly; }
+.justify-around { justify-content: space-around; }
+.justify-self-center { justify-self: center; }
+.justify-self-end { justify-self: end; }
+.justify-self-start { justify-self: start; }
+.content-center { align-content: center; }
+.content-start { align-content: flex-start; }
+.content-end { align-content: flex-end; }
+.content-between { align-content: space-between; }
+.self-center { align-self: center; }
+.self-start { align-self: flex-start; }
+.self-end { align-self: flex-end; }
+.self-stretch { align-self: stretch; }
+.ordem-primeiro { order: -1; }
+.ordem-ultimo { order: 9999; }
+.ordem-none { order: 0; }
+
+/* ─── Gap (espaçamento entre filhos) ─── */
+.gap-0 { gap: var(--espaco-0); }
 .gap-1 { gap: var(--espaco-1); }
 .gap-2 { gap: var(--espaco-2); }
 .gap-3 { gap: var(--espaco-3); }
@@ -688,13 +1021,30 @@ ul, ol { list-style: none; }
 .gap-6 { gap: var(--espaco-6); }
 .gap-8 { gap: var(--espaco-8); }
 .gap-10 { gap: var(--espaco-10); }
+.gap-12 { gap: var(--espaco-12); }
+.gap-x-2 { column-gap: var(--espaco-2); }
+.gap-x-4 { column-gap: var(--espaco-4); }
+.gap-x-6 { column-gap: var(--espaco-6); }
+.gap-y-2 { row-gap: var(--espaco-2); }
+.gap-y-4 { row-gap: var(--espaco-4); }
+.gap-y-6 { row-gap: var(--espaco-6); }
 
-/* Grid */
+/* ─── Grid ─── */
 .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-rows-2 { grid-template-rows: repeat(2, 1fr); }
+.grid-rows-3 { grid-template-rows: repeat(3, 1fr); }
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-full { grid-column: 1 / -1; }
+.row-span-2 { grid-row: span 2; }
+.row-span-full { grid-row: 1 / -1; }
+.grid-flow-col { grid-auto-flow: column; }
+.grid-flow-row { grid-auto-flow: row; }
+.grid-flow-dense { grid-auto-flow: dense; }
 
-/* Padding */
+/* ─── Padding ─── */
 .p-0 { padding: 0; }
 .p-1 { padding: var(--espaco-1); }
 .p-2 { padding: var(--espaco-2); }
@@ -703,43 +1053,89 @@ ul, ol { list-style: none; }
 .p-5 { padding: var(--espaco-5); }
 .p-6 { padding: var(--espaco-6); }
 .p-8 { padding: var(--espaco-8); }
+.p-10 { padding: var(--espaco-10); }
+.p-12 { padding: var(--espaco-12); }
 .px-0 { padding-left: 0; padding-right: 0; }
 .px-2 { padding-left: var(--espaco-2); padding-right: var(--espaco-2); }
 .px-4 { padding-left: var(--espaco-4); padding-right: var(--espaco-4); }
 .px-6 { padding-left: var(--espaco-6); padding-right: var(--espaco-6); }
+.px-8 { padding-left: var(--espaco-8); padding-right: var(--espaco-8); }
+.py-0 { padding-top: 0; padding-bottom: 0; }
 .py-2 { padding-top: var(--espaco-2); padding-bottom: var(--espaco-2); }
 .py-4 { padding-top: var(--espaco-4); padding-bottom: var(--espaco-4); }
 .py-6 { padding-top: var(--espaco-6); padding-bottom: var(--espaco-6); }
 .py-8 { padding-top: var(--espaco-8); padding-bottom: var(--espaco-8); }
+.py-10 { padding-top: var(--espaco-10); padding-bottom: var(--espaco-10); }
+.pt-2 { padding-top: var(--espaco-2); }
+.pt-4 { padding-top: var(--espaco-4); }
+.pb-2 { padding-bottom: var(--espaco-2); }
+.pb-4 { padding-bottom: var(--espaco-4); }
+.pl-2 { padding-left: var(--espaco-2); }
+.pr-2 { padding-right: var(--espaco-2); }
 
-/* Margin */
+/* ─── Margin ─── */
 .m-0 { margin: 0; }
 .m-auto { margin: auto; }
 .mx-auto { margin-left: auto; margin-right: auto; }
+.my-auto { margin-top: auto; margin-bottom: auto; }
 .mt-0 { margin-top: 0; }
 .mt-2 { margin-top: var(--espaco-2); }
 .mt-4 { margin-top: var(--espaco-4); }
 .mt-6 { margin-top: var(--espaco-6); }
 .mt-8 { margin-top: var(--espaco-8); }
+.mt-auto { margin-top: auto; }
 .mb-0 { margin-bottom: 0; }
 .mb-2 { margin-bottom: var(--espaco-2); }
 .mb-4 { margin-bottom: var(--espaco-4); }
 .mb-6 { margin-bottom: var(--espaco-6); }
 .mb-8 { margin-bottom: var(--espaco-8); }
+.mb-auto { margin-bottom: auto; }
+.ml-auto { margin-left: auto; }
+.mr-auto { margin-right: auto; }
 
-/* Largura / Altura */
+/* ─── Largura / Altura ─── */
 .w-full { width: 100%; }
 .w-max { width: 100%; max-width: var(--max); }
 .w-auto { width: auto; }
 .w-metade { width: 50%; }
+.w-tela { width: 100vw; }
+.w-min { min-width: min-content; }
+.w-max-conteudo { width: max-content; }
+.w-texto { max-width: var(--max-texto); }
 .h-full { height: 100%; }
 .h-dvh { min-height: 100dvh; }
 .h-auto { height: auto; }
+.h-tela { height: 100vh; }
+.h-screen { height: 100dvh; }
 
-/* Tipografia */
+/* ─── Aspect Ratio ─── */
+.aspect-quadrado { aspect-ratio: 1 / 1; }
+.aspect-video { aspect-ratio: 16 / 9; }
+.aspect-vertical { aspect-ratio: 9 / 16; }
+.aspect-4-3 { aspect-ratio: 4 / 3; }
+.aspect-3-2 { aspect-ratio: 3 / 2; }
+.aspect-2-1 { aspect-ratio: 2 / 1; }
+.aspect-auto { aspect-ratio: auto; }
+
+/* ─── Object Fit ─── */
+.encaixe-cobrir { object-fit: cover; }
+.encaixe-contem { object-fit: contain; }
+.encaixe-preencher { object-fit: fill; }
+.encaixe-dimensionar { object-fit: scale-down; }
+.encaixe-none { object-fit: none; }
+.encaixe-pos-top { object-position: top; }
+.encaixe-pos-centro { object-position: center; }
+.encaixe-pos-baixo { object-position: bottom; }
+
+/* ─── Isolation ─── */
+.isolate { isolation: isolate; }
+.isolate-auto { isolation: auto; }
+
+/* ─── Tipografia ─── */
 .text-esquerda { text-align: left; }
 .text-centro { text-align: center; }
 .text-direita { text-align: right; }
+.text-justificar { text-align: justify; }
 .text-xs { font-size: 0.75rem; }
 .text-sm { font-size: 0.875rem; }
 .text-base { font-size: 1rem; }
@@ -747,6 +1143,8 @@ ul, ol { list-style: none; }
 .text-xl { font-size: 1.25rem; }
 .text-2xl { font-size: 1.5rem; }
 .text-3xl { font-size: 2rem; }
+.text-4xl { font-size: 2.5rem; }
+.text-5xl { font-size: 3rem; }
 .font-normal { font-weight: 400; }
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
@@ -757,9 +1155,29 @@ ul, ol { list-style: none; }
 .text-maiusculas { text-transform: uppercase; }
 .text-minusculas { text-transform: lowercase; }
 .text-capitalizar { text-transform: capitalize; }
+.text-normal { text-transform: none; }
 .text-mono { font-variant-numeric: tabular-nums; }
+.text-mono-ff { font-variant-numeric: tabular-nums oldstyle-nums; }
+.text-italico { font-style: italic; }
+.text-normal { font-style: normal; }
+.text-suave { font-weight: 300; }
+.leading-tight { line-height: 1.15; }
+.leading-normal { line-height: 1.5; }
+.leading-relaxado { line-height: 1.75; }
+.leading-solto { line-height: 2; }
+.tracking-tight { letter-spacing: -0.025em; }
+.tracking-wide { letter-spacing: 0.025em; }
+.tracking-wider { letter-spacing: 0.05em; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quebra-palavra { word-break: break-word; }
+.quebra-tudo { word-break: break-all; }
+.quebra-normal { word-break: normal; overflow-wrap: normal; }
+.hifen { hyphens: auto; }
+.espaco-branco-normal { white-space: normal; }
+.espaco-branco-nowrap { white-space: nowrap; }
+.espaco-branco-pre { white-space: pre; }
 
-/* Cores de texto */
+/* ─── Cores de texto ─── */
 .c-texto { color: var(--texto); }
 .c-texto2 { color: var(--texto-2); }
 .c-texto3 { color: var(--texto-3); }
@@ -769,33 +1187,59 @@ ul, ol { list-style: none; }
 .c-aviso { color: var(--aviso); }
 .c-erro { color: var(--erro); }
 .c-inv { color: var(--texto-inv); }
+.c-rosa { color: var(--rosa); }
+.c-roxo { color: var(--roxo); }
+.c-laranja { color: var(--laranja); }
+.c-ciano { color: var(--ciano); }
+.c-inherit { color: inherit; }
+.c-transparente { color: transparent; }
 
-/* Cores de fundo */
+/* ─── Cores de fundo ─── */
 .bg-fundo { background: var(--fundo); }
 .bg-elevado { background: var(--fundo-elevado); }
 .bg-subtil { background: var(--fundo-subtil); }
 .bg-superfice { background: var(--superfice); }
 .bg-acento { background: var(--acento); }
 .bg-acento-suave { background: var(--acento-suave); }
+.bg-info { background: rgba(59,130,246,0.1); }
+.bg-sucesso { background: rgba(34,197,94,0.1); }
+.bg-aviso { background: rgba(245,158,11,0.1); }
+.bg-erro { background: rgba(239,68,68,0.1); }
+.bg-transparente { background: transparent; }
 
-/* Gradientes */
+/* ─── Gradientes ─── */
 .gradiente-hero { background: var(--gradiente-hero); }
 .gradiente-escuro { background: var(--gradiente-acento); }
 .gradiente-colorido { background: var(--gradiente-colorido); }
+.gradiente-ouro { background: var(--gradiente-ouro); }
+.gradiente-mar { background: var(--gradiente-mar); }
 
-/* Bordas & Raio */
+/* ─── Bordas & Raio ─── */
 .borda { border: 1px solid var(--borda); }
 .borda-forte { border: 1px solid var(--borda-forte); }
 .borda-0 { border: none; }
 .borda-t { border-top: 1px solid var(--borda); }
 .borda-b { border-bottom: 1px solid var(--borda); }
+.borda-l { border-left: 1px solid var(--borda); }
+.borda-r { border-right: 1px solid var(--borda); }
+.borda-2 { border-width: 2px; }
+.borda-acento { border-color: var(--acento); }
+.borda-erro { border-color: var(--erro); }
+.borda-info { border-color: var(--info); }
+.borda-sucesso { border-color: var(--sucesso); }
+.borda-pontilhada { border-style: dashed; }
+.borda-tracejada { border-style: dotted; }
 .raio-sm { border-radius: var(--raio-sm); }
 .raio { border-radius: var(--raio); }
 .raio-lg { border-radius: var(--raio-lg); }
 .raio-xl { border-radius: var(--raio-xl); }
 .raio-full { border-radius: var(--raio-full); }
+.raio-t-lg { border-radius: var(--raio-lg) var(--raio-lg) 0 0; }
+.raio-b-lg { border-radius: 0 0 var(--raio-lg) var(--raio-lg); }
+.raio-esq-lg { border-radius: var(--raio-lg) 0 0 var(--raio-lg); }
+.raio-dir-lg { border-radius: 0 var(--raio-lg) var(--raio-lg) 0; }
 
-/* Sombras */
+/* ─── Sombras ─── */
 .sombra-xs { box-shadow: var(--sombra-xs); }
 .sombra-sm { box-shadow: var(--sombra-sm); }
 .sombra { box-shadow: var(--sombra); }
@@ -803,45 +1247,97 @@ ul, ol { list-style: none; }
 .sombra-lg { box-shadow: var(--sombra-lg); }
 .sombra-xl { box-shadow: var(--sombra-xl); }
 .sombra-0 { box-shadow: none; }
+.sombra-interna { box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); }
+.sombra-colorida { box-shadow: 0 4px 20px rgba(99,102,241,0.25); }
 
-/* Overflow */
+/* ─── Overflow ─── */
 .overflow-hidden { overflow: hidden; }
 .overflow-auto { overflow: auto; }
 .overflow-scroll { overflow: scroll; }
+.overflow-visible { overflow: visible; }
 .overflow-x-auto { overflow-x: auto; }
 .overflow-y-auto { overflow-y: auto; }
+.overflow-x-hidden { overflow-x: hidden; }
+.overflow-y-hidden { overflow-y: hidden; }
+.overflow-x-scroll { overflow-x: scroll; }
 
-/* Posição */
+/* ─── Posição ─── */
 .relativo { position: relative; }
 .absoluto { position: absolute; }
 .fixo { position: fixed; }
 .sticky { position: sticky; }
+.estatico { position: static; }
 .inset-0 { inset: 0; }
+.inset-x-0 { left: 0; right: 0; }
+.inset-y-0 { top: 0; bottom: 0; }
+.topo-0 { top: 0; }
+.direita-0 { right: 0; }
+.baixo-0 { bottom: 0; }
+.esquerda-0 { left: 0; }
+.z-0 { z-index: 0; }
 .z-1 { z-index: 1; }
 .z-10 { z-index: 10; }
 .z-50 { z-index: 50; }
 .z-100 { z-index: 100; }
+.z-999 { z-index: 999; }
+.z-auto { z-index: auto; }
 
-/* Opacidade */
+/* ─── Opacidade ─── */
 .op-0 { opacity: 0; }
+.op-10 { opacity: 0.1; }
 .op-25 { opacity: 0.25; }
 .op-50 { opacity: 0.5; }
 .op-75 { opacity: 0.75; }
+.op-90 { opacity: 0.9; }
 .op-100 { opacity: 1; }
 
-/* Glassmorphism */
+/* ─── Filtros ─── */
+.filtro-desfoque-sm { filter: blur(2px); }
+.filtro-desfoque { filter: blur(4px); }
+.filtro-desfoque-lg { filter: blur(16px); }
+.filtro-brilho { filter: brightness(1.1); }
+.filtro-contraste { filter: contrast(1.3); }
+.filtro-escala-cinza { filter: grayscale(1); }
+.filtro-sepia { filter: sepia(0.6); }
+.filtro-saturado { filter: saturate(1.3); }
+.filtro-nenhum { filter: none; }
+.Translucido { backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); }
+
+/* ─── Transform ─── */
+.escalar-95 { transform: scale(0.95); }
+.escalar-105 { transform: scale(1.05); }
+.escalar-110 { transform: scale(1.1); }
+.rodar-90 { transform: rotate(90deg); }
+.rodar-180 { transform: rotate(180deg); }
+.rodar-270 { transform: rotate(270deg); }
+.espelhar-x { transform: scaleX(-1); }
+.espelhar-y { transform: scaleY(-1); }
+.translate-x-2 { transform: translateX(8px); }
+.translate-x--2 { transform: translateX(-8px); }
+.translate-y-2 { transform: translateY(8px); }
+.translate-y--2 { transform: translateY(-8px); }
+
+/* ─── Glassmorphism ─── */
 .vidro { background: rgba(255,255,255,0.6); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid rgba(255,255,255,0.2); }
 :root.dark .vidro, @media (prefers-color-scheme: dark) { .vidro { background: rgba(8,8,16,0.6); border-color: rgba(255,255,255,0.08); } }
 .vidro-forte { background: rgba(255,255,255,0.85); backdrop-filter: blur(24px) saturate(200%); -webkit-backdrop-filter: blur(24px) saturate(200%); }
 :root.dark .vidro-forte, @media (prefers-color-scheme: dark) { .vidro-forte { background: rgba(8,8,16,0.85); } }
 
-/* Animação util */
+/* ─── Animação util ─── */
 .animar-fade { animation: aparecer var(--dur-slow) var(--ease) both; }
 .animar-subir { animation: entrar-baixo var(--dur-slow) var(--ease) both; }
 .animar-descer { animation: entrar-cima var(--dur-slow) var(--ease) both; }
+.animar-esquerda { animation: entrar-esquerda var(--dur-slow) var(--ease) both; }
+.animar-direita { animation: entrar-direita var(--dur-slow) var(--ease) both; }
 .animar-escalar { animation: escalar var(--dur-slow) var(--ease) both; }
 .animar-pulsar { animation: pulsar 2s ease-in-out infinite; }
 .animar-rodar { animation: rodar 1s linear infinite; }
+.animar-balancar { animation: balancar 1s var(--ease) infinite; }
+.animar-pular { animation: pular 1s var(--ease-spring) infinite; }
+.animar-revelar { animation: revelar var(--dur-slow) var(--ease) both; }
+.animar-flutuar { animation: flutuar 3s ease-in-out infinite; }
+.animar-vibrar { animation: vibrar 0.3s var(--ease) infinite; }
+.animar-aparecer-escalar { animation: aparecer-escalar 0.5s var(--ease-spring) both; }
 .animar-lento { animation-duration: 600ms; }
 .animar-rapido { animation-duration: 200ms; }
 .animar-atraso-1 { animation-delay: 100ms; }
@@ -849,35 +1345,103 @@ ul, ol { list-style: none; }
 .animar-atraso-3 { animation-delay: 300ms; }
 .animar-atraso-4 { animation-delay: 400ms; }
 .animar-atraso-5 { animation-delay: 500ms; }
-.hover\:animar-subir:hover { animation: entrar-baixo 300ms var(--ease) both; }
+.animar-atraso-6 { animation-delay: 600ms; }
+.animar-atraso-8 { animation-delay: 800ms; }
+.animar-atraso-10 { animation-delay: 1000ms; }
+.animar-fill-forwards { animation-fill-mode: forwards; }
+.animar-fill-backwards { animation-fill-mode: backwards; }
+.animar-fill-both { animation-fill-mode: both; }
+.animar-iteracao-1 { animation-iteration-count: 1; }
+.animar-iteracao-infinita { animation-iteration-count: infinite; }
+.hover\\:animar-subir:hover { animation: entrar-baixo 300ms var(--ease) both; }
 
-/* Interatividade */
+/* ─── Interatividade ─── */
 .pointer { cursor: pointer; }
+.pointer-events-none { pointer-events: none; }
+.pointer-events-auto { pointer-events: auto; }
 .select-none { -webkit-user-select: none; user-select: none; }
-.hover\:subir:hover { transform: translateY(-2px); }
-.hover\:sombra:hover { box-shadow: var(--sombra-md); }
-.hover\:brilho:hover { filter: brightness(1.05); }
+.select-text { -webkit-user-select: text; user-select: text; }
+.select-all { -webkit-user-select: all; user-select: all; }
+.hover\\:subir:hover { transform: translateY(-2px); }
+.hover\\:baixar:hover { transform: translateY(1px); }
+.hover\\:sombra:hover { box-shadow: var(--sombra-md); }
+.hover\\:brilho:hover { filter: brightness(1.05); }
+.hover\\:escalar:hover { transform: scale(1.03); }
+.hover\\:opaco:hover { opacity: 0.8; }
+.hover\\:cor-acento:hover { color: var(--acento); }
+.hover\\:bg-acento-suave:hover { background: var(--acento-suave); }
+.hover\\:subir-sombra:hover { transform: translateY(-2px); box-shadow: var(--sombra-md); }
+.active\\:escalar:active { transform: scale(0.97); }
 .transicao { transition: all var(--dur) var(--ease); }
 .transicao-rapida { transition: all var(--dur-fast) var(--ease); }
 .transicao-lenta { transition: all var(--dur-slow) var(--ease); }
+.transicao-transform { transition: transform var(--dur) var(--ease-spring); }
+.transicao-cores { transition: color var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.transicao-sombra { transition: box-shadow var(--dur) var(--ease); }
 
-/* Responsividade: mostrar/esconder */
+/* ─── Resize ─── */
+.redimensionar { resize: both; overflow: auto; }
+.redimensionar-h { resize: horizontal; overflow: auto; }
+.redimensionar-v { resize: vertical; overflow: auto; }
+.redimensionar-none { resize: none; }
+
+/* ─── Cursor ─── */
+.cursor-pointer { cursor: pointer; }
+.cursor-default { cursor: default; }
+.cursor-wait { cursor: wait; }
+.cursor-text { cursor: text; }
+.cursor-move { cursor: move; }
+.cursor-not-allowed { cursor: not-allowed; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+.cursor-zoom-in { cursor: zoom-in; }
+
+/* ─── Scroll Snap ─── */
+.snap-container { scroll-snap-type: y mandatory; overflow-y: scroll; }
+.snap-x { scroll-snap-type: x mandatory; overflow-x: scroll; }
+.snap-proximidade { scroll-snap-type: y proximity; }
+.snap-start { scroll-snap-align: start; }
+.snap-center { scroll-snap-align: center; }
+.snap-end { scroll-snap-align: end; }
+.scroll-suave { scroll-behavior: smooth; }
+
+/* ─── Touch / Drag ─── */
+.touch-pan-x { touch-action: pan-x; }
+.touch-pan-y { touch-action: pan-y; }
+.touch-auto { touch-action: auto; }
+.touch-none { touch-action: none; }
+.draggable { -webkit-user-drag: element; user-drag: element; }
+.drag-none { -webkit-user-drag: none; user-drag: none; }
+
+/* ─── List Style ─── */
+.lista-disc { list-style: disc; padding-left: 1.5em; }
+.lista-decimal { list-style: decimal; padding-left: 1.5em; }
+.lista-none { list-style: none; }
+.lista-inside { list-style-position: inside; }
+
+/* ─── Visibilidade ─── */
+.visivel { visibility: visible; }
+.invisivel { visibility: hidden; }
+.oculto { display: none !important; }
+
+/* ─── Responsividade: mostrar/esconder ─── */
 .mobile-only { display: none; }
 .desktop-only { display: revert; }
 .tablet-only { display: none; }
-
-/* Container queries */
-@container (min-width: 400px) {
-  .cartao { container-type: inline-size; }
-}
+.print-only { display: none; }
 
 /* ═══════════════════════════════════════════════════════
    RESPONSIVIDADE
    ═══════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
-  .grade-4 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1200px) {
   .grade-5 { grid-template-columns: repeat(3, 1fr); }
   .grade-6 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .grade-4 { grid-template-columns: repeat(2, 1fr); }
+  .grade-5 { grid-template-columns: repeat(2, 1fr); }
+  .grade-6 { grid-template-columns: repeat(2, 1fr); }
   .desktop-only { display: none; }
   .tablet-only { display: revert; }
 }
@@ -887,20 +1451,29 @@ ul, ol { list-style: none; }
   .secao { padding: 56px var(--padding-x); }
   .secao-Hero { padding: 80px var(--padding-x); }
   .secao-CTA { margin: 0 16px 48px; border-radius: var(--raio-lg); }
-  .grade-2, .grade-3, .grade-4, .grade-5, .grade-6 { grid-template-columns: 1fr; }
-  .linha { gap: 16px; }
+  .grade-2, .grade-3, .grade-4, .grade-5, .grade-6, .grade-auto-gd { grid-template-columns: 1fr; }
+  .linha { gap: 16px; flex-direction: column; }
   .botao, .botao-sm, .botao-lg { width: 100%; justify-content: center; }
   .cartao { padding: 24px; }
   .cartao .imagem { margin: -24px -24px 20px; width: calc(100% + 48px); }
+  .cartao-horizontal { flex-direction: column; }
+  .cartao-horizontal .imagem { width: 100%; min-width: unset; }
+  .nav { flex-direction: column; gap: 8px; }
+  .entrada-grupo { flex-direction: column; }
+  .entrada-grupo .entrada { border-radius: var(--raio); }
+  .entrada-grupo .botao { border-radius: var(--raio); }
   .mobile-only { display: revert; }
   .tablet-only { display: none; }
   .w-metade { width: 100%; }
   .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
+  .grid-flow-col { grid-auto-flow: row; }
+  .hide-mobile { display: none !important; }
 }
 
 @media (max-width: 480px) {
   .secao { padding: 40px var(--padding-x); }
   .titulo { font-size: clamp(1.8rem, 8vw, 2.5rem); }
+  .hide-phone { display: none !important; }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -911,5 +1484,21 @@ ul, ol { list-style: none; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--borda-forte); border-radius: var(--raio-full); }
 ::-webkit-scrollbar-thumb:hover { background: var(--texto-3); }
+
+/* ═══════════════════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════════════════ */
+@media print {
+  .no-print, .no-print * { display: none !important; }
+  .print-only { display: revert !important; }
+  body { font-size: 12pt; color: #000; background: #fff; }
+  a { text-decoration: underline; }
+  .secao { padding: 20px 0; break-inside: avoid; page-break-inside: avoid; }
+  .cartao { box-shadow: none; border: 1px solid #ccc; animation: none; }
+  .botao { background: #000; color: #fff; }
+  .secao-CTA { background: #000; color: #fff; }
+  .secao-Nav { display: none; }
+  @page { margin: 2cm; }
+}
 `
 }

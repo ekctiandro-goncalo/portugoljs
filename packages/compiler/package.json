@@ -1,6 +1,6 @@
 {
   "name": "@porttugol/compiler",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Compilador Portugol.js — Lexer, Parser, AST e gerador de código React/HTML",
   "author": {
     "name": "Eketiandro Gonçalo"

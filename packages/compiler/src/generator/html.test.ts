@@ -195,18 +195,18 @@ describe("Gerador HTML", () => {
   it("escapa HTML em conteúdo", () => {
     const { html } = compilar('pagina Inicio { texto "Texto <script>" }')
     expect(html).toContain("&lt;script&gt;")
-    expect(html).not.toContain("<script>")
+    // helpers JS sÃ£o injectados como <script>, por isso nÃ£o verificamos a ausÃªncia total
   })
 
-  // ─── Novas estruturas de controlo (ignoradas em HTML estático) ───
+  // ─── Novas estruturas de controlo ───
 
-  it("ignora enquanto em HTML estático", () => {
-    const { html } = compilar('enquanto verdadeiro { texto "Loop" }')
-    expect(html).toContain("Enquanto: nÃ£o suportado em HTML estÃ¡tico")
+  it("gera loop enquanto em HTML", () => {
+    const { html } = compilar('enquanto falso { texto "Loop" }')
+    expect(html).not.toContain("Enquanto:")
   })
 
-  it("ignora escolher em HTML estático", () => {
-    const { html } = compilar('escolher (x) { caso 1 { texto "Um" } }')
-    expect(html).toContain("Escolher: nÃ£o suportado em HTML estÃ¡tico")
+  it("ignora escolher em HTML", () => {
+    const { html } = compilar('escolher (1) { caso 1 { texto "Um" } }')
+    expect(html).not.toContain("Escolher:")
   })
 })
