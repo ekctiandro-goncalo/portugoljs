@@ -1,0 +1,49 @@
+pagina NovasFuncionalidades {
+  titulo "Portugol.js — Novas Funcionalidades"
+
+  texto "escrever() — imprime múltiplos argumentos com separador"
+  escrever("Olá", "Mundo", "!")
+
+  texto "Array literais e operações"
+  var numeros = [1, 2, 3, 4, 5]
+  escrever("Array:", numeros)
+  escrever("Tamanho:", tamanho(numeros))
+
+  texto "nulo — literal nulo"
+  var vazia = nulo
+  escrever("vazia é:", vazia)
+  escrever("tipo(vazia):", tipo(vazia))
+
+  texto "Operador % (mod/resto)"
+  escrever("10 % 3 =", 10 % 3)
+  escrever("15 % 4 =", 15 % 4)
+
+  texto "Funções built-in — matemática"
+  escrever("aleatorio(1, 10):", aleatorio(1, 10))
+  escrever("arredondar(3.7):", arredondar(3.7))
+  escrever("abs(-42):", abs(-42))
+  escrever("raiz(144):", raiz(144))
+  escrever("potencia(2, 10):", potencia(2, 10))
+  escrever("max(10, 20, 5):", max(10, 20, 5))
+  escrever("min(10, 20, 5):", min(10, 20, 5))
+
+  texto "Funções built-in — texto"
+  escrever("maiusculo('olá'):", maiusculo("olá"))
+  escrever("minusculo('OLA'):", minusculo("OLA"))
+  escrever("cortar('  oi  '):", cortar("  oi  "))
+  escrever("subtexto('portugol', 0, 4):", subtexto("portugol", 0, 4))
+
+  texto "Funções built-in — tipo/conversão"
+  escrever("tipo('abc'):", tipo("abc"))
+  escrever("tipo(42):", tipo(42))
+  escrever("tipo([1,2,3]):", tipo([1, 2, 3]))
+  escrever("tipo(nulo):", tipo(nulo))
+  escrever("numero('42'):", numero("42"))
+  escrever("texto(99):", texto(99))
+
+  texto "Arrays com para cada"
+  var frutas = ["maçã", "banana", "laranja"]
+  para cada fruta em frutas {
+    escrever("  Gosto de", fruta)
+  }
+}

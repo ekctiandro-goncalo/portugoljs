@@ -287,6 +287,9 @@ function gerarNoHTML(no: No, indent: number): string {
     case "Rota":
     case "Modelo":
     case "Retornar":
+    case "Parar":
+    case "Continuar":
+    case "Escrever":
       return `${pad}<!-- ${no.tipo}: nÃ£o suportado em HTML estÃ¡tico -->`
 
     default:

@@ -6,6 +6,8 @@ export type Expressao =
   | { tipo: "Binaria"; esq: Expressao; oper: string; dir: Expressao }
   | { tipo: "Unaria"; oper: string; expr: Expressao }
   | { tipo: "Chamada"; nome: string; args: Expressao[] }
+  | { tipo: "Array"; elementos: Expressao[] }
+  | { tipo: "Nulo" }
 
 export interface Campo {
   nome: string
@@ -100,3 +102,4 @@ export type No =
   | { tipo: "Variavel"; nome: string; valor?: Expressao }
   | { tipo: "Parar" }
   | { tipo: "Continuar" }
+  | { tipo: "Escrever"; args: Expressao[] }

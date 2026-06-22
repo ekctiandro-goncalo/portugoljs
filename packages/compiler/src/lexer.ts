@@ -52,6 +52,9 @@ const PALAVRAS_RESERVADAS: Record<string, TokenType> = {
   falso: "FALSE",
   parar: "PARAR",
   continuar: "CONTINUAR",
+  escrever: "ESCREVER",
+  ler: "LER",
+  nulo: "NULO",
 }
 
 export function lexer(entrada: string): Token[] {
@@ -139,6 +142,9 @@ export function lexer(entrada: string): Token[] {
     if (char === "-") { adicionarToken("MINUS", "-"); avancar(); continue }
     if (char === "*") { adicionarToken("STAR", "*"); avancar(); continue }
     if (char === "/") { adicionarToken("SLASH", "/"); avancar(); continue }
+    if (char === "%") { adicionarToken("MOD", "%"); avancar(); continue }
+    if (char === "[") { adicionarToken("LBRACKET", "["); avancar(); continue }
+    if (char === "]") { adicionarToken("RBRACKET", "]"); avancar(); continue }
 
     // Strings: "texto"
     if (char === '"') {

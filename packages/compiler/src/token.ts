@@ -68,6 +68,12 @@ export type TokenType =
   | "FALSE"
   | "PARAR"
   | "CONTINUAR"
+  | "ESCREVER"
+  | "LER"
+  | "NULO"
+  | "MOD"
+  | "LBRACKET"
+  | "RBRACKET"
   | "EOF"
   | "ERRO"
 

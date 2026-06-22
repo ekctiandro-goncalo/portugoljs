@@ -13,6 +13,8 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+.portugol-servir/
+
 # Env
 .env
 .env.local

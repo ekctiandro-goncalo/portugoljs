@@ -121,6 +121,8 @@ export function parser(tokens: Token[]): No[] {
         return parseRota()
       case "MODELO":
         return parseModelo()
+      case "ESCREVER":
+        return parseEscrever()
       case "RETORNAR":
         return parseRetornar()
       case "LINHA":
@@ -537,6 +539,35 @@ export function parser(tokens: Token[]): No[] {
     return { tipo: "Modelo", nome, campos }
   }
 
+  function parseEscrever(): No {
+    consumir("ESCREVER")
+    consumir("LPAREN")
+    const args: Expressao[] = []
+    if (peek().type !== "RPAREN") {
+      args.push(parseExpr(0))
+      while (peek().type === "COMMA") {
+        consumir("COMMA")
+        args.push(parseExpr(0))
+      }
+    }
+    consumir("RPAREN")
+    return { tipo: "Escrever", args }
+  }
+
+  function parseArray(): Expressao {
+    consumir("LBRACKET")
+    const elementos: Expressao[] = []
+    if (peek().type !== "RBRACKET") {
+      elementos.push(parseExpr(0))
+      while (peek().type === "COMMA") {
+        consumir("COMMA")
+        elementos.push(parseExpr(0))
+      }
+    }
+    consumir("RBRACKET")
+    return { tipo: "Array", elementos }
+  }
+
   function parseRetornar(): No {
     consumir("RETORNAR")
     const valor = parseExpr(0)
@@ -840,7 +871,7 @@ export function parser(tokens: Token[]): No[] {
     OR: 1, AND: 2,
     EQ_EQ: 3, NOT_EQ: 3, GREATER: 3, LESS: 3, GREATER_EQ: 3, LESS_EQ: 3,
     PLUS: 4, MINUS: 4,
-    STAR: 5, SLASH: 5,
+    STAR: 5, SLASH: 5, MOD: 5,
   }
 
   function parseArgsChamada(): Expressao[] {
@@ -891,7 +922,15 @@ export function parser(tokens: Token[]): No[] {
       case "DIVISOR":
       case "VIDEO":
       case "CITACAO":
+      case "LIGACAO":
+      case "ICONE":
+      case "MODELO":
+      case "ENQUANTO":
         consumir()
+        if (peek().type === "LPAREN") {
+          const args = parseArgsChamada()
+          return { tipo: "Chamada", nome: token.value, args }
+        }
         return { tipo: "Ident", nome: token.value }
       case "NOT":
         consumir()
@@ -910,6 +949,11 @@ export function parser(tokens: Token[]): No[] {
       case "FALSE":
         consumir()
         return { tipo: "Bool", valor: false }
+      case "NULO":
+        consumir()
+        return { tipo: "Nulo" }
+      case "LBRACKET":
+        return parseArray()
       default:
         throw new ErroParser(
           `Expressão inválida: "${token.value}"`,

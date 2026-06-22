@@ -1,4 +1,5 @@
 import { No, Expressao, Caso } from "./ast.js"
+import { readSync } from "fs"
 
 // ─── Ambiente (variáveis) ───
 
@@ -48,9 +49,49 @@ export class Interpreter {
   private ambiente: Ambiente = new Ambiente()
   private limiteIteracoes = 10000
 
+  private inicializarAmbiente(env: Ambiente): void {
+    // Matemática
+    env.definir("aleatorio", (min: number, max: number) =>
+      Math.floor(Math.random() * (max - min + 1)) + min)
+    env.definir("arredondar", (n: number) => Math.round(n))
+    env.definir("abs", (n: number) => Math.abs(n))
+    env.definir("max", (...args: number[]) => Math.max(...args))
+    env.definir("min", (...args: number[]) => Math.min(...args))
+    env.definir("raiz", (n: number) => Math.sqrt(n))
+    env.definir("potencia", (base: number, exp: number) => Math.pow(base, exp))
+    // Texto
+    env.definir("tamanho", (x: any) =>
+      typeof x === "string" || Array.isArray(x) ? x.length : String(x).length)
+    env.definir("maiusculo", (s: string) => String(s).toUpperCase())
+    env.definir("minusculo", (s: string) => String(s).toLowerCase())
+    env.definir("cortar", (s: string) => String(s).trim())
+    env.definir("subtexto", (s: string, inicio: number, fim?: number) =>
+      String(s).substring(inicio, fim))
+    // Tipo / Conversão
+    env.definir("tipo", (x: any) => {
+      if (x === null) return "nulo"
+      if (Array.isArray(x)) return "lista"
+      return typeof x
+    })
+    env.definir("numero", (x: any) => Number(x))
+    env.definir("texto", (x: any) => String(x))
+    // Leitura do terminal
+    env.definir("ler", (prompt?: string) => {
+      if (prompt) process.stdout.write(String(prompt))
+      try {
+        const buf = Buffer.alloc(4096)
+        const bytes = readSync(process.stdin.fd, buf, 0, 4096, null)
+        return buf.toString("utf-8", 0, bytes).replace(/\r?\n$/, "")
+      } catch {
+        return ""
+      }
+    })
+  }
+
   executar(ast: No[]): SaidaInterpreter[] {
     this.saida = []
     this.ambiente = new Ambiente()
+    this.inicializarAmbiente(this.ambiente)
 
     try {
       for (const no of ast) {
@@ -125,6 +166,13 @@ export class Interpreter {
       case "Ligacao":
       case "Icone":
         return
+
+      // ─── Escrever — imprime com separador ───
+      case "Escrever": {
+        const partes = no.args.map((a) => String(this.avaliarExpr(a, env)))
+        this.imprimir(partes.join(" "))
+        return
+      }
 
       // ─── Variável: var x = 10 ───
       case "Variavel": {
@@ -295,6 +343,11 @@ export class Interpreter {
       case "Str":   return expr.valor
       case "Bool":  return expr.valor
 
+      case "Nulo":   return null
+
+      case "Array":
+        return expr.elementos.map((e) => this.avaliarExpr(e, env))
+
       case "Ident": {
         const val = env.obter(expr.nome)
         if (val === undefined) return expr.nome // retorna o nome como string se não definida
@@ -327,6 +380,7 @@ export class Interpreter {
           case "-":  return Number(esq) - Number(dir)
           case "*":  return Number(esq) * Number(dir)
           case "/":  return dir !== 0 ? Number(esq) / Number(dir) : (this.saida.push({ tipo: "erro", valor: "Divisão por zero" }), 0)
+          case "%":  return Number(esq) % Number(dir)
           case "==": return esq == dir
           case "!=": return esq != dir
           case ">":  return esq > dir
@@ -339,12 +393,23 @@ export class Interpreter {
 
       case "Chamada": {
         const fn = env.obter(expr.nome)
-        if (!fn || fn.tipo !== "Funcao") {
+        if (!fn) {
           this.saida.push({ tipo: "erro", valor: `Função "${expr.nome}" não está definida.` })
           return undefined
         }
 
         const argsAvaliados = expr.args.map((a) => this.avaliarExpr(a, env))
+
+        // Função nativa (built-in)
+        if (typeof fn === "function") {
+          return fn(...argsAvaliados)
+        }
+
+        // Função Portugol (AST)
+        if (fn.tipo !== "Funcao") {
+          this.saida.push({ tipo: "erro", valor: `"${expr.nome}" não é uma função.` })
+          return undefined
+        }
 
         if (argsAvaliados.length !== fn.params.length) {
           this.saida.push({
