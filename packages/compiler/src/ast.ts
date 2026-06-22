@@ -50,6 +50,8 @@ export interface Estilos {
   transicao?: string
   decoracao?: string
   maiusculas?: string
+  // Classes CSS extra (Tailwind-style)
+  classe?: string
 }
 
 export const PROPRIEDADES_ESTILO = new Set([
@@ -57,6 +59,7 @@ export const PROPRIEDADES_ESTILO = new Set([
   "borda", "raio", "sombra", "tamanho", "peso", "alinhamento",
   "espacamento", "opacidade", "justificar", "centralizar", "origem",
   "animacao", "cursor", "overflow", "transicao", "decoracao", "maiusculas",
+  "classe",
 ])
 
 // ─── AST Nodes ───

@@ -4,40 +4,38 @@ pagina PortugolV4 {
     # NAV — vidro (glassmorphism) + d-flex + gap
     # ════════════════════════════════════════════════════
     secao Nav {
-        vidro
-        d-flex items-center justify-between
+        classe "vidro d-flex items-center justify-between"
 
         titulo {
             texto "portugol.js"
             tamanho 20 peso 700
         }
-        linha gap-4 {
+        linha { classe "gap-4"
             ligacao { texto "Início" para "#" }
             ligacao { texto "Funcionalidades" para "#funcs" }
             ligacao { texto "Preços" para "#precos" }
-            botao-sm { texto "Começar" }
+            botao { texto "Começar" classe "botao-sm" }
         }
     }
 
     # ════════════════════════════════════════════════════
-    # HERO — animar-subir + gradiente + variantes
+    # HERO — animações + gradiente + variantes de botão
     # ════════════════════════════════════════════════════
     secao Hero {
-        d-flex flex-col items-center text-centro
-        gradiente-hero
+        classe "d-flex flex-col items-center text-centro gradiente-hero"
 
-        distintivo-info "v0.2.1 — Design System v4"
+        distintivo { texto "v0.2.1 — Design System v4" classe "distintivo-info" }
         espacador 24
 
         titulo {
             texto "CSS tipo Tailwind"
             tamanho 72 peso 700
-            animar-subir animar-atraso-1
+            classe "animar-subir animar-atraso-1"
         }
         titulo {
             texto "em Portugol.js"
             tamanho 72 peso 700
-            animar-subir animar-atraso-2
+            classe "animar-subir animar-atraso-2"
         }
 
         espacador 20
@@ -45,25 +43,23 @@ pagina PortugolV4 {
         texto {
             "Utilitários, variantes, glassmorphism, animações e muito mais."
             tamanho 20
-            animar-subir animar-atraso-3
+            classe "animar-subir animar-atraso-3"
         }
 
         espacador 40
 
-        linha gap-4 animar-subir animar-atraso-4 {
+        linha { classe "gap-4 animar-subir animar-atraso-4"
             botao { texto "Começar grátis" }
-            botao-outline { texto "Ver docs →" }
-            botao-gradiente { texto "Novo!" }
+            botao { texto "Ver docs →" classe "botao-outline" }
+            botao { texto "Novo!" classe "botao-gradiente" }
         }
 
         espacador 60
 
-        cartao-destaque {
-            d-flex flex-col items-center
-            linha gap-2 {
+        cartao { classe "cartao-destaque"
+            linha { classe "gap-2"
                 icone codigo
-                texto "npm install -g @porttugol/cli"
-                c-acento font-mono
+                texto { "npm install -g @porttugol/cli" classe "c-acento font-mono" }
             }
         }
     }
@@ -72,49 +68,50 @@ pagina PortugolV4 {
     # FUNCIONALIDADES — cartao variantes + grade-auto
     # ════════════════════════════════════════════════════
     secao Funcionalidades {
-        d-flex flex-col items-center
+        classe "d-flex flex-col items-center"
 
-        distinctivo "Componentes"
+        distintivo "Componentes"
         espacador 16
         titulo "Variantes para cada componente"
         subtitulo "Não é só um estilo — é um sistema de design completo."
 
         espacador 48
 
-        grade-auto {
+        grade 0 { classe "grade-auto"
+
             cartao {
-                icone-lg c-info foguete
+                icone { foguete classe "icone-lg c-info" }
                 espacador 16
                 subtitulo "Botões"
                 texto "Usa botao, botao-outline, botao-ghost, botao-gradiente, botao-sm, botao-lg"
                 espacador 12
-                linha gap-2 {
-                    botao-sm { texto "Normal" }
-                    botao-outline botao-sm { texto "Outline" }
-                    botao-ghost botao-sm { texto "Ghost" }
+                linha { classe "gap-2"
+                    botao { texto "Normal" classe "botao-sm" }
+                    botao { texto "Outline" classe "botao-sm botao-outline" }
+                    botao { texto "Ghost" classe "botao-sm botao-ghost" }
                 }
             }
-            cartao-borda {
-                icone-lg c-sucesso verificar
+            cartao { classe "cartao-borda"
+                icone { verificar classe "icone-lg c-sucesso" }
                 espacador 16
                 subtitulo "Cartões"
                 texto "Variantes: cartao-borda, cartao-plano, cartao-destaque, cartao-interativo"
             }
-            cartao-plano {
-                icone-lg c-aviso aviso
+            cartao { classe "cartao-plano"
+                icone { aviso classe "icone-lg c-aviso" }
                 espacador 16
                 subtitulo "Distintivos"
-                texto "Cores: distinctivo-acento, -info, -sucesso, -aviso, -erro. Tamanhos: sm, lg"
+                texto "Cores: -info, -sucesso, -aviso, -erro. Tamanhos: sm, lg"
                 espacador 12
-                linha gap-2 {
-                    distinctivo "Normal"
-                    distinctivo-info "Info"
-                    distinctivo-sucesso "Sucesso"
-                    distinctivo-erro "Erro"
+                linha { classe "gap-2"
+                    distintivo "Normal"
+                    distintivo { texto "Info" classe "distintivo-info" }
+                    distintivo { texto "Sucesso" classe "distintivo-sucesso" }
+                    distintivo { texto "Erro" classe "distintivo-erro" }
                 }
             }
-            cartao-destaque {
-                icone-lg estrela
+            cartao { classe "cartao-destaque"
+                icone { estrela classe "icone-lg" }
                 espacador 16
                 subtitulo "Entradas"
                 texto "Estados: entrada-erro, entrada-sucesso. Com placeholder e rotulo."
@@ -124,13 +121,13 @@ pagina PortugolV4 {
                 entrada texto { placeholder "Senha" rotulo "Senha" }
             }
             cartao {
-                icone-lg c-erro coracao
+                icone { coracao classe "icone-lg c-erro" }
                 espacador 16
                 subtitulo "Glassmorphism"
-                texto "Adiciona vidro ou vidro-forte a qualquer secao para efeito de vidro fosco."
+                texto "Adiciona classe 'vidro' ou 'vidro-forte' para efeito de vidro fosco."
             }
-            cartao-interativo {
-                icone-lg seta_direita
+            cartao { classe "cartao-interativo"
+                icone { seta_direita classe "icone-lg" }
                 espacador 16
                 subtitulo "Utilitários"
                 texto "d-flex, flex-col, gap-*, p-*, m-*, text-*, font-*, c-*, bg-*, sombra-*, raio-*"
@@ -145,50 +142,54 @@ pagina PortugolV4 {
     # UTILITÁRIOS — demonstração visual de classes
     # ════════════════════════════════════════════════════
     secao Utilitarios {
-        d-flex flex-col items-center
+        classe "d-flex flex-col items-center"
 
-        distinctivo-acento "Tailwind-style"
+        distintivo { texto "Tailwind-style" classe "distintivo-acento" }
         espacador 16
         titulo "Classes utilitárias"
         subtitulo "Centenas de classes para estilizar sem escrever CSS."
 
         espacador 48
 
-        grade-auto {
+        grade 0 { classe "grade-auto"
+
             cartao {
                 subtitulo "Espaçamento"
-                d-flex flex-col gap-2
-                div { bg-subtil p-2 raio "p-2" }
-                div { bg-subtil p-4 raio "p-4" }
-                div { bg-subtil p-6 raio "p-6" }
-                div { bg-subtil px-4 raio "px-4" }
+                coluna { classe "gap-2"
+                    cartao { texto "p-2" classe "cartao-plano p-2" }
+                    cartao { texto "p-4" classe "cartao-plano p-4" }
+                    cartao { texto "p-6" classe "cartao-plano p-6" }
+                    cartao { texto "px-4" classe "cartao-plano px-4" }
+                }
             }
             cartao {
                 subtitulo "Cores"
-                d-flex flex-col gap-2
-                div { bg-subtil p-2 raio "c-texto — cor padrão" }
-                div { bg-subtil p-2 raio c-texto2 "c-texto2 — cor secundária" }
-                div { bg-subtil p-2 raio c-texto3 "c-texto3 — cor terciária" }
-                div { bg-acento p-2 raio c-inv "c-inv — cor inversa" }
+                coluna { classe "gap-2"
+                    cartao { texto "c-texto — cor padrão" classe "cartao-plano c-texto" }
+                    cartao { texto "c-texto2 — cor secundária" classe "cartao-plano c-texto2" }
+                    cartao { texto "c-texto3 — cor terciária" classe "cartao-plano c-texto3" }
+                    cartao { texto "c-inv — cor inversa" classe "cartao-plano bg-acento c-inv" }
+                }
             }
             cartao {
                 subtitulo "Tipografia"
-                d-flex flex-col gap-2
-                text-xs "text-xs — 0.75rem"
-                text-sm "text-sm — 0.875rem"
-                text-base "text-base — 1rem"
-                text-lg "text-lg — 1.125rem"
-                text-xl "text-xl — 1.25rem"
-                text-2xl "text-2xl — 1.5rem"
+                coluna { classe "gap-2"
+                    texto { "text-xs — 0.75rem" classe "text-xs" }
+                    texto { "text-sm — 0.875rem" classe "text-sm" }
+                    texto { "text-base — 1rem" classe "text-base" }
+                    texto { "text-lg — 1.125rem" classe "text-lg" }
+                    texto { "text-xl — 1.25rem" classe "text-xl" }
+                    texto { "text-2xl — 1.5rem" classe "text-2xl" }
+                }
             }
             cartao {
                 subtitulo "Animações"
-                d-flex flex-col gap-3
-                div animar-fade "animar-fade"
-                div animar-subir "animar-subir"
-                div animar-escalar "animar-escalar"
-                div animar-pulsar "animar-pulsar"
-                div animar-rodar "🔄 animar-rodar"
+                coluna { classe "gap-3"
+                    texto { "animar-fade" classe "animar-fade" }
+                    texto { "animar-subir" classe "animar-subir" }
+                    texto { "animar-escalar" classe "animar-escalar" }
+                    texto { "animar-pulsar" classe "animar-pulsar" }
+                }
             }
         }
     }
@@ -200,15 +201,15 @@ pagina PortugolV4 {
     # TESTEMUNHOS — citacao variantes
     # ════════════════════════════════════════════════════
     secao Testemunhas {
-        d-flex flex-col items-center
+        classe "d-flex flex-col items-center"
 
-        distinctivo-sucesso "Comunidade"
+        distintivo { texto "Comunidade" classe "distintivo-sucesso" }
         espacador 16
         titulo "O que dizem sobre o v4"
         espacador 48
 
-        grade-auto {
-            citacao-destaque {
+        grade 0 { classe "grade-auto"
+            citacao { classe "citacao-destaque"
                 texto "Finalmente um design system que parece Tailwind mas escrevo em português."
                 autor "Dev frontend, Luanda"
             }
@@ -226,20 +227,19 @@ pagina PortugolV4 {
     espacador 60
 
     # ════════════════════════════════════════════════════
-    # CTA — botao variantes + vidro-forte
+    # CTA — vidro-forte + botao-lg
     # ════════════════════════════════════════════════════
     secao CTA {
-        d-flex flex-col items-center text-centro
-        vidro-forte
-        raio-xl p-8
+        classe "d-flex flex-col items-center text-centro vidro-forte raio-xl"
+        padding 32
 
         titulo "Pronto para experimentar?"
         espacador 16
         subtitulo "Cria a tua primeira página com CSS tipo Tailwind em segundos."
         espacador 32
-        linha gap-4 {
-            botao-lg { texto "Instalar agora" }
-            botao-outline botao-lg { texto "Ver exemplos" }
+        linha { classe "gap-4"
+            botao { texto "Instalar agora" classe "botao-lg" }
+            botao { texto "Ver exemplos" classe "botao-lg botao-outline" }
         }
     }
 
@@ -251,12 +251,13 @@ pagina PortugolV4 {
     secao Rodape {
         divisor
         espacador 24
-        d-flex justify-between items-center
-        texto "© 2026 Portugol.js — by Eketiandro Gonçalo"
-        linha gap-4 {
-            icone github
-            icone twitter
-            icone mail
+        linha { classe "justify-between items-center"
+            texto "© 2026 Portugol.js — by Eketiandro Gonçalo"
+            linha { classe "gap-4"
+                icone github
+                icone twitter
+                icone mail
+            }
         }
     }
 }

@@ -259,12 +259,12 @@ w-full   w-max   w-metade   h-dvh
 ```
 pagina Inicio {
     secao Hero {
-        d-flex flex-col items-center text-centro
-        titulo { texto "Portugol.js" animar-subir }
-        texto "Escreves em português." c-texto3
-        linha gap-4 {
+        classe "d-flex flex-col items-center text-centro gradiente-hero"
+        titulo { texto "Portugol.js" classe "animar-subir" }
+        texto { "Escreves em português." classe "c-texto3" }
+        linha { classe "gap-4 animar-subir animar-atraso-1"
             botao { texto "Começar" }
-            botao-outline { texto "Documentação" }
+            botao { texto "Documentação" classe "botao-outline" }
         }
     }
 }

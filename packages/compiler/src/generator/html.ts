@@ -141,31 +141,31 @@ function gerarNoHTML(no: No, indent: number): string {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const corpo = gerarCorpoHTML(no.corpo, indent + 1)
-      return `${pad}<section class="${cls}"${style}>\n${corpo}\n${pad}</section>`
+      return `${pad}<section class="${classesComExtra(cls, no.estilos)}"${style}>\n${corpo}\n${pad}</section>`
     }
 
     case "Titulo": {
       const conteudo = expressaoParaTexto(no.valor)
       const estilo = estilosParaTipografia(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<h1 class="titulo"${style}>${conteudo}</h1>`
+      return `${pad}<h1 class="${classesComExtra('titulo', no.estilos)}"${style}>${conteudo}</h1>`
     }
 
     case "Texto": {
       const conteudo = expressaoParaTexto(no.valor)
       const estilo = estilosParaTipografia(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<p class="texto"${style}>${conteudo}</p>`
+      return `${pad}<p class="${classesComExtra('texto', no.estilos)}"${style}>${conteudo}</p>`
     }
 
     case "Botao": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<button class="botao"${style}>${escaparHTML(no.label)}</button>`
+      return `${pad}<button class="${classesComExtra('botao', no.estilos)}"${style}>${escaparHTML(no.label)}</button>`
     }
 
     case "Entrada": {
-      let attrs = `type="${escaparHTML(no.tipoInput)}" class="entrada"`
+      let attrs = `type="${escaparHTML(no.tipoInput)}" class="entrada"` // entrada nao tem estilos p/ classe extra
       if (no.placeholder) attrs += ` placeholder="${escaparHTML(no.placeholder)}"`
       if (no.rotulo) attrs += ` aria-label="${escaparHTML(no.rotulo)}"`
       return `${pad}<input ${attrs} />`
@@ -175,36 +175,36 @@ function gerarNoHTML(no: No, indent: number): string {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const alt = no.alt ? ` alt="${escaparHTML(no.alt)}"` : ' alt=""'
-      return `${pad}<img src="${escaparHTML(no.origem)}"${alt} class="imagem"${style} />`
+      return `${pad}<img src="${escaparHTML(no.origem)}"${alt} class="${classesComExtra('imagem', no.estilos)}"${style} />`
     }
 
     case "Linha": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const corpo = gerarCorpoHTML(no.corpo, indent + 1)
-      return `${pad}<div class="linha"${style}>\n${corpo}\n${pad}</div>`
+      return `${pad}<div class="${classesComExtra('linha', no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Coluna": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const corpo = gerarCorpoHTML(no.corpo, indent + 1)
-      return `${pad}<div class="coluna"${style}>\n${corpo}\n${pad}</div>`
+      return `${pad}<div class="${classesComExtra('coluna', no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Grade": {
-      const cls = `grade grade-${no.colunas}`
+      const cls = no.colunas === 0 ? "grade grade-auto" : `grade grade-${no.colunas}`
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const corpo = gerarCorpoHTML(no.corpo, indent + 1)
-      return `${pad}<div class="${cls}"${style}>\n${corpo}\n${pad}</div>`
+      return `${pad}<div class="${classesComExtra(cls, no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Cartao": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const corpo = gerarCorpoHTML(no.corpo, indent + 1)
-      return `${pad}<div class="cartao"${style}>\n${corpo}\n${pad}</div>`
+      return `${pad}<div class="${classesComExtra('cartao', no.estilos)}"${style}>\n${corpo}\n${pad}</div>`
     }
 
     case "Espacador": {
@@ -216,7 +216,7 @@ function gerarNoHTML(no: No, indent: number): string {
       const conteudo = expressaoParaTexto(no.valor)
       const estilo = estilosParaTipografia(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<h2 class="subtitulo"${style}>${conteudo}</h2>`
+      return `${pad}<h2 class="${classesComExtra('subtitulo', no.estilos)}"${style}>${conteudo}</h2>`
     }
 
     case "Icone": {
@@ -225,28 +225,28 @@ function gerarNoHTML(no: No, indent: number): string {
       // Tenta resolver como Ã­cone Lucide; senÃ£o usa como emoji/texto
       const svg = resolverIcone(no.valor)
       if (svg) {
-        return `${pad}<span class="icone lucide"${style} aria-hidden="true">${svg}</span>`
+        return `${pad}<span class="${classesComExtra('icone lucide', no.estilos)}"${style} aria-hidden="true">${svg}</span>`
       }
-      return `${pad}<span class="icone"${style}>${escaparHTML(no.valor)}</span>`
+      return `${pad}<span class="${classesComExtra('icone', no.estilos)}"${style}>${escaparHTML(no.valor)}</span>`
     }
 
     case "Ligacao": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
       const externo = no.para.startsWith("http") ? ' target="_blank" rel="noopener noreferrer"' : ""
-      return `${pad}<a href="${escaparHTML(no.para)}" class="ligacao"${style}${externo}>${escaparHTML(no.label)}</a>`
+      return `${pad}<a href="${escaparHTML(no.para)}" class="${classesComExtra('ligacao', no.estilos)}"${style}${externo}>${escaparHTML(no.label)}</a>`
     }
 
     case "Distintivo": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<span class="distintivo"${style}>${escaparHTML(no.label)}</span>`
+      return `${pad}<span class="${classesComExtra('distintivo', no.estilos)}"${style}>${escaparHTML(no.label)}</span>`
     }
 
     case "Divisor": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<hr class="divisor"${style} />`
+      return `${pad}<hr class="${classesComExtra('divisor', no.estilos)}"${style} />`
     }
 
     case "Video": {
@@ -263,7 +263,7 @@ function gerarNoHTML(no: No, indent: number): string {
       const itens = no.itens
         .map((item) => `${pad}  <li class="lista-item">${escaparHTML(item)}</li>`)
         .join("\n")
-      return `${pad}<ul class="lista"${style}>\n${itens}\n${pad}</ul>`
+      return `${pad}<ul class="${classesComExtra('lista', no.estilos)}"${style}>\n${itens}\n${pad}</ul>`
     }
 
     case "Citacao": {
@@ -272,7 +272,7 @@ function gerarNoHTML(no: No, indent: number): string {
       const autor = no.autor
         ? `\n${pad}  <cite class="citacao-autor">â€” ${escaparHTML(no.autor)}</cite>`
         : ""
-      return `${pad}<blockquote class="citacao"${style}>\n${pad}  <p>${escaparHTML(no.texto)}</p>${autor}\n${pad}</blockquote>`
+      return `${pad}<blockquote class="${classesComExtra('citacao', no.estilos)}"${style}>\n${pad}  <p>${escaparHTML(no.texto)}</p>${autor}\n${pad}</blockquote>`
     }
 
     // NÃ³s nÃ£o-visuais: ignorar no HTML
@@ -295,6 +295,13 @@ function gerarNoHTML(no: No, indent: number): string {
 }
 
 // â”€â”€â”€ Converter estilos da AST para CSS inline â”€â”€â”€
+
+// ─── Concatenar classes base + extra (propriedade classe) ───
+
+function classesComExtra(base: string, estilos?: Estilos): string {
+  if (!estilos?.classe) return base
+  return `${base} ${estilos.classe}`
+}
 
 function estilosParaCSS(estilos?: Estilos): string {
   if (!estilos) return ""
