@@ -1,0 +1,262 @@
+pagina PortugolV4 {
+
+    # ════════════════════════════════════════════════════
+    # NAV — vidro (glassmorphism) + d-flex + gap
+    # ════════════════════════════════════════════════════
+    secao Nav {
+        vidro
+        d-flex items-center justify-between
+
+        titulo {
+            texto "portugol.js"
+            tamanho 20 peso 700
+        }
+        linha gap-4 {
+            ligacao { texto "Início" para "#" }
+            ligacao { texto "Funcionalidades" para "#funcs" }
+            ligacao { texto "Preços" para "#precos" }
+            botao-sm { texto "Começar" }
+        }
+    }
+
+    # ════════════════════════════════════════════════════
+    # HERO — animar-subir + gradiente + variantes
+    # ════════════════════════════════════════════════════
+    secao Hero {
+        d-flex flex-col items-center text-centro
+        gradiente-hero
+
+        distintivo-info "v0.2.1 — Design System v4"
+        espacador 24
+
+        titulo {
+            texto "CSS tipo Tailwind"
+            tamanho 72 peso 700
+            animar-subir animar-atraso-1
+        }
+        titulo {
+            texto "em Portugol.js"
+            tamanho 72 peso 700
+            animar-subir animar-atraso-2
+        }
+
+        espacador 20
+
+        texto {
+            "Utilitários, variantes, glassmorphism, animações e muito mais."
+            tamanho 20
+            animar-subir animar-atraso-3
+        }
+
+        espacador 40
+
+        linha gap-4 animar-subir animar-atraso-4 {
+            botao { texto "Começar grátis" }
+            botao-outline { texto "Ver docs →" }
+            botao-gradiente { texto "Novo!" }
+        }
+
+        espacador 60
+
+        cartao-destaque {
+            d-flex flex-col items-center
+            linha gap-2 {
+                icone codigo
+                texto "npm install -g @porttugol/cli"
+                c-acento font-mono
+            }
+        }
+    }
+
+    # ════════════════════════════════════════════════════
+    # FUNCIONALIDADES — cartao variantes + grade-auto
+    # ════════════════════════════════════════════════════
+    secao Funcionalidades {
+        d-flex flex-col items-center
+
+        distinctivo "Componentes"
+        espacador 16
+        titulo "Variantes para cada componente"
+        subtitulo "Não é só um estilo — é um sistema de design completo."
+
+        espacador 48
+
+        grade-auto {
+            cartao {
+                icone-lg c-info foguete
+                espacador 16
+                subtitulo "Botões"
+                texto "Usa botao, botao-outline, botao-ghost, botao-gradiente, botao-sm, botao-lg"
+                espacador 12
+                linha gap-2 {
+                    botao-sm { texto "Normal" }
+                    botao-outline botao-sm { texto "Outline" }
+                    botao-ghost botao-sm { texto "Ghost" }
+                }
+            }
+            cartao-borda {
+                icone-lg c-sucesso verificar
+                espacador 16
+                subtitulo "Cartões"
+                texto "Variantes: cartao-borda, cartao-plano, cartao-destaque, cartao-interativo"
+            }
+            cartao-plano {
+                icone-lg c-aviso aviso
+                espacador 16
+                subtitulo "Distintivos"
+                texto "Cores: distinctivo-acento, -info, -sucesso, -aviso, -erro. Tamanhos: sm, lg"
+                espacador 12
+                linha gap-2 {
+                    distinctivo "Normal"
+                    distinctivo-info "Info"
+                    distinctivo-sucesso "Sucesso"
+                    distinctivo-erro "Erro"
+                }
+            }
+            cartao-destaque {
+                icone-lg estrela
+                espacador 16
+                subtitulo "Entradas"
+                texto "Estados: entrada-erro, entrada-sucesso. Com placeholder e rotulo."
+                espacador 12
+                entrada email { placeholder "teu@email.com" rotulo "Email" }
+                espacador 8
+                entrada texto { placeholder "Senha" rotulo "Senha" }
+            }
+            cartao {
+                icone-lg c-erro coracao
+                espacador 16
+                subtitulo "Glassmorphism"
+                texto "Adiciona vidro ou vidro-forte a qualquer secao para efeito de vidro fosco."
+            }
+            cartao-interativo {
+                icone-lg seta_direita
+                espacador 16
+                subtitulo "Utilitários"
+                texto "d-flex, flex-col, gap-*, p-*, m-*, text-*, font-*, c-*, bg-*, sombra-*, raio-*"
+            }
+        }
+    }
+
+    divisor
+    espacador 40
+
+    # ════════════════════════════════════════════════════
+    # UTILITÁRIOS — demonstração visual de classes
+    # ════════════════════════════════════════════════════
+    secao Utilitarios {
+        d-flex flex-col items-center
+
+        distinctivo-acento "Tailwind-style"
+        espacador 16
+        titulo "Classes utilitárias"
+        subtitulo "Centenas de classes para estilizar sem escrever CSS."
+
+        espacador 48
+
+        grade-auto {
+            cartao {
+                subtitulo "Espaçamento"
+                d-flex flex-col gap-2
+                div { bg-subtil p-2 raio "p-2" }
+                div { bg-subtil p-4 raio "p-4" }
+                div { bg-subtil p-6 raio "p-6" }
+                div { bg-subtil px-4 raio "px-4" }
+            }
+            cartao {
+                subtitulo "Cores"
+                d-flex flex-col gap-2
+                div { bg-subtil p-2 raio "c-texto — cor padrão" }
+                div { bg-subtil p-2 raio c-texto2 "c-texto2 — cor secundária" }
+                div { bg-subtil p-2 raio c-texto3 "c-texto3 — cor terciária" }
+                div { bg-acento p-2 raio c-inv "c-inv — cor inversa" }
+            }
+            cartao {
+                subtitulo "Tipografia"
+                d-flex flex-col gap-2
+                text-xs "text-xs — 0.75rem"
+                text-sm "text-sm — 0.875rem"
+                text-base "text-base — 1rem"
+                text-lg "text-lg — 1.125rem"
+                text-xl "text-xl — 1.25rem"
+                text-2xl "text-2xl — 1.5rem"
+            }
+            cartao {
+                subtitulo "Animações"
+                d-flex flex-col gap-3
+                div animar-fade "animar-fade"
+                div animar-subir "animar-subir"
+                div animar-escalar "animar-escalar"
+                div animar-pulsar "animar-pulsar"
+                div animar-rodar "🔄 animar-rodar"
+            }
+        }
+    }
+
+    divisor
+    espacador 40
+
+    # ════════════════════════════════════════════════════
+    # TESTEMUNHOS — citacao variantes
+    # ════════════════════════════════════════════════════
+    secao Testemunhas {
+        d-flex flex-col items-center
+
+        distinctivo-sucesso "Comunidade"
+        espacador 16
+        titulo "O que dizem sobre o v4"
+        espacador 48
+
+        grade-auto {
+            citacao-destaque {
+                texto "Finalmente um design system que parece Tailwind mas escrevo em português."
+                autor "Dev frontend, Luanda"
+            }
+            citacao {
+                texto "As classes utilitárias pouparam-me horas de CSS. Impressionante."
+                autor "Web designer, São Paulo"
+            }
+            citacao {
+                texto "Vidro, gradientes, animações — tudo com uma linha. Incrível."
+                autor "Estudante, Lisboa"
+            }
+        }
+    }
+
+    espacador 60
+
+    # ════════════════════════════════════════════════════
+    # CTA — botao variantes + vidro-forte
+    # ════════════════════════════════════════════════════
+    secao CTA {
+        d-flex flex-col items-center text-centro
+        vidro-forte
+        raio-xl p-8
+
+        titulo "Pronto para experimentar?"
+        espacador 16
+        subtitulo "Cria a tua primeira página com CSS tipo Tailwind em segundos."
+        espacador 32
+        linha gap-4 {
+            botao-lg { texto "Instalar agora" }
+            botao-outline botao-lg { texto "Ver exemplos" }
+        }
+    }
+
+    espacador 60
+
+    # ════════════════════════════════════════════════════
+    # RODAPÉ
+    # ════════════════════════════════════════════════════
+    secao Rodape {
+        divisor
+        espacador 24
+        d-flex justify-between items-center
+        texto "© 2026 Portugol.js — by Eketiandro Gonçalo"
+        linha gap-4 {
+            icone github
+            icone twitter
+            icone mail
+        }
+    }
+}
