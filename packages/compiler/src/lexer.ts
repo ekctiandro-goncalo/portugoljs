@@ -50,6 +50,8 @@ const PALAVRAS_RESERVADAS: Record<string, TokenType> = {
   nao: "NOT",
   verdadeiro: "TRUE",
   falso: "FALSE",
+  parar: "PARAR",
+  continuar: "CONTINUAR",
 }
 
 export function lexer(entrada: string): Token[] {

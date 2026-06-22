@@ -1,0 +1,378 @@
+From 6f7579741335130e2e5bb0e3dba1fff760353179 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Sat, 20 Jun 2026 14:39:40 +0000
+Subject: [PATCH] fix: chamada de funcoes nao implementada + 'senao se'
+ ignorado no interpreter
+
+- AST: novo tipo de expressao 'Chamada' (nome + args)
+- Parser: identificador seguido de '(' agora e parseado como chamada de funcao
+- Interpreter: 'Chamada' agora executa o corpo da funcao com escopo proprio,
+  valida aridade dos argumentos, e captura o 'retornar' como valor de retorno
+- Interpreter: 'se/senao se/senao' agora percorre a cadeia 'senaoSe' antes de
+  cair no 'senao' final (antes saltava direto para o senao, ignorando os
+  ramos do meio)
+- Generator (React): 'Chamada' adicionada ao gerarExpr/gerarExprCE para o
+  codigo gerado tambem suportar chamadas de funcao
+- Adiciona interpreter.test.ts (20 testes nao existiam testes para o
+  interpreter ainda), incluindo testes de regressao para os dois bugs acima
+
+Testado: 138/138 testes a passar (118 existentes + 20 novos), mais os
+ficheiros reais teste/calculos.pjs e teste/logica.pjs a correr sem erros.
+---
+ packages/compiler/src/ast.ts              |   1 +
+ packages/compiler/src/generator/react.ts  |   3 +
+ packages/compiler/src/interpreter.test.ts | 194 ++++++++++++++++++++++
+ packages/compiler/src/interpreter.ts      |  51 +++++-
+ packages/compiler/src/parser.ts           |  19 +++
+ 5 files changed, 266 insertions(+), 2 deletions(-)
+ create mode 100644 packages/compiler/src/interpreter.test.ts
+
+diff --git a/packages/compiler/src/ast.ts b/packages/compiler/src/ast.ts
+index ee0fa8b..2061a1f 100644
+--- a/packages/compiler/src/ast.ts
++++ b/packages/compiler/src/ast.ts
+@@ -5,6 +5,7 @@ export type Expressao =
+   | { tipo: "Ident"; nome: string }
+   | { tipo: "Binaria"; esq: Expressao; oper: string; dir: Expressao }
+   | { tipo: "Unaria"; oper: string; expr: Expressao }
++  | { tipo: "Chamada"; nome: string; args: Expressao[] }
+ 
+ export interface Campo {
+   nome: string
+diff --git a/packages/compiler/src/generator/react.ts b/packages/compiler/src/generator/react.ts
+index ebf90c0..60e5063 100644
+--- a/packages/compiler/src/generator/react.ts
++++ b/packages/compiler/src/generator/react.ts
+@@ -256,6 +256,7 @@ function gerarExprCE(expr: any): string {
+   if (expr.tipo === "Num") return expr.valor
+   if (expr.tipo === "Bool") return expr.valor ? "true" : "false"
+   if (expr.tipo === "Ident") return expr.nome
++  if (expr.tipo === "Chamada") return `${expr.nome}(${expr.args.map(gerarExprCE).join(", ")})`
+   return JSON.stringify(String(expr))
+ }
+ 
+@@ -446,6 +447,8 @@ function gerarExpr(expr: Expressao): string {
+     case "Unaria":
+       const op = expr.oper === "nao" ? "!" : expr.oper
+       return `${op}${gerarExpr(expr.expr)}`
++    case "Chamada":
++      return `${expr.nome}(${expr.args.map(gerarExpr).join(", ")})`
+   }
+ }
+ 
+diff --git a/packages/compiler/src/interpreter.test.ts b/packages/compiler/src/interpreter.test.ts
+new file mode 100644
+index 0000000..41e08c6
+--- /dev/null
++++ b/packages/compiler/src/interpreter.test.ts
+@@ -0,0 +1,194 @@
++import { describe, it, expect } from "vitest"
++import { lexer } from "./lexer.js"
++import { parser } from "./parser.js"
++import { Interpreter } from "./interpreter.js"
++
++function correr(codigo: string) {
++  const ast = parser(lexer(codigo))
++  return new Interpreter().executar(ast)
++}
++
++function textos(codigo: string) {
++  return correr(codigo)
++    .filter((l) => l.tipo === "texto")
++    .map((l) => l.valor)
++}
++
++describe("Interpreter — básico", () => {
++  it("var + texto imprime o valor", () => {
++    expect(textos(`pagina T { var x = 5 texto x }`)).toEqual(["5"])
++  })
++
++  it("aritmética respeita precedência", () => {
++    expect(textos(`pagina T { texto 2 + 3 * 4 }`)).toEqual(["14"])
++  })
++
++  it("concatenação de string com número", () => {
++    expect(textos(`pagina T { var n = 3 texto "n=" + n }`)).toEqual(["n=3"])
++  })
++})
++
++describe("Interpreter — se / senao se / senao", () => {
++  it("entra no ramo 'se' quando verdadeiro", () => {
++    expect(textos(`pagina T { se 1 == 1 { texto "a" } senao { texto "b" } }`)).toEqual(["a"])
++  })
++
++  it("entra no ramo 'senao' quando falso e não há senao-se", () => {
++    expect(textos(`pagina T { se 1 == 2 { texto "a" } senao { texto "b" } }`)).toEqual(["b"])
++  })
++
++  it("REGRESSÃO: 'senao se' do meio é avaliado, não salta para o 'senao' final", () => {
++    const codigo = `
++      pagina T {
++        var x = 7
++        se x > 10 {
++          texto "grande"
++        } senao se x > 5 {
++          texto "medio"
++        } senao {
++          texto "pequeno"
++        }
++      }
++    `
++    expect(textos(codigo)).toEqual(["medio"])
++  })
++
++  it("REGRESSÃO: cadeia com vários 'senao se', cai no correto", () => {
++    const codigo = `
++      pagina T {
++        var nota = 6
++        se nota >= 9 {
++          texto "A"
++        } senao se nota >= 7 {
++          texto "B"
++        } senao se nota >= 5 {
++          texto "C"
++        } senao {
++          texto "D"
++        }
++      }
++    `
++    expect(textos(codigo)).toEqual(["C"])
++  })
++
++  it("cai no 'senao' final quando nenhuma condição bate", () => {
++    const codigo = `
++      pagina T {
++        var x = 1
++        se x > 10 { texto "a" } senao se x > 5 { texto "b" } senao { texto "c" }
++      }
++    `
++    expect(textos(codigo)).toEqual(["c"])
++  })
++})
++
++describe("Interpreter — funções (chamada)", () => {
++  it("REGRESSÃO: função simples sem parâmetros é chamável", () => {
++    const codigo = `
++      pagina T {
++        funcao ola() { retornar "ola" }
++        texto ola()
++      }
++    `
++    expect(textos(codigo)).toEqual(["ola"])
++  })
++
++  it("REGRESSÃO: função com parâmetros e retorno é chamável", () => {
++    const codigo = `
++      pagina T {
++        funcao saudar(nome) { retornar "Ola " + nome }
++        texto saudar("Mundo")
++      }
++    `
++    expect(textos(codigo)).toEqual(["Ola Mundo"])
++  })
++
++  it("função com lógica interna (soma de dois parâmetros)", () => {
++    const codigo = `
++      pagina T {
++        funcao somar(a, b) { retornar a + b }
++        texto somar(2, 3)
++      }
++    `
++    expect(textos(codigo)).toEqual(["5"])
++  })
++
++  it("chamar função não definida gera erro em vez de rebentar", () => {
++    const saida = correr(`pagina T { texto naoexiste() }`)
++    expect(saida.some((l) => l.tipo === "erro")).toBe(true)
++  })
++
++  it("chamar com número errado de argumentos gera erro", () => {
++    const codigo = `
++      pagina T {
++        funcao somar(a, b) { retornar a + b }
++        texto somar(1)
++      }
++    `
++    const saida = correr(codigo)
++    expect(saida.some((l) => l.tipo === "erro")).toBe(true)
++  })
++})
++
++describe("Interpreter — loops", () => {
++  it("para ... ate ... conta corretamente", () => {
++    expect(textos(`pagina T { para i = 1 ate 3 { texto i } }`)).toEqual(["1", "2", "3"])
++  })
++
++  it("enquanto pára quando a condição deixa de ser verdadeira", () => {
++    const codigo = `
++      pagina T {
++        var c = 1
++        enquanto c <= 3 {
++          texto c
++          c = c + 1
++        }
++      }
++    `
++    expect(textos(codigo)).toEqual(["1", "2", "3"])
++  })
++
++  it("enquanto com loop infinito é cortado pelo limite de iterações", () => {
++    const saida = correr(`pagina T { enquanto verdadeiro { texto "x" } }`)
++    expect(saida.some((l) => l.tipo === "aviso")).toBe(true)
++  })
++})
++
++describe("Interpreter — escolher/caso", () => {
++  it("entra no caso certo", () => {
++    const codigo = `
++      pagina T {
++        var dia = 3
++        escolher (dia) {
++          caso 1 { texto "Segunda" }
++          caso 3 { texto "Quarta" }
++          padrao { texto "Outro" }
++        }
++      }
++    `
++    expect(textos(codigo)).toEqual(["Quarta"])
++  })
++
++  it("cai no padrão quando nenhum caso bate", () => {
++    const codigo = `
++      pagina T {
++        var dia = 9
++        escolher (dia) {
++          caso 1 { texto "Segunda" }
++          padrao { texto "Outro" }
++        }
++      }
++    `
++    expect(textos(codigo)).toEqual(["Outro"])
++  })
++})
++
++describe("Interpreter — operadores lógicos", () => {
++  it("'e' (AND) só é verdadeiro se ambos forem", () => {
++    expect(textos(`pagina T { se verdadeiro e falso { texto "sim" } senao { texto "nao" } }`)).toEqual(["nao"])
++  })
++
++  it("'ou' (OR) é verdadeiro se um dos dois for", () => {
++    expect(textos(`pagina T { se verdadeiro ou falso { texto "sim" } senao { texto "nao" } }`)).toEqual(["sim"])
++  })
++})
+diff --git a/packages/compiler/src/interpreter.ts b/packages/compiler/src/interpreter.ts
+index 35c2c67..e31ef5a 100644
+--- a/packages/compiler/src/interpreter.ts
++++ b/packages/compiler/src/interpreter.ts
+@@ -151,7 +151,7 @@ export class Interpreter {
+         throw { tipo: "retornar", valor }
+       }
+ 
+-      // ─── Se / Senao ───
++      // ─── Se / Senao se / Senao ───
+       case "Se": {
+         const condicao = this.avaliarExpr(no.condicao, env)
+         const escopo = new Ambiente(env)
+@@ -159,7 +159,21 @@ export class Interpreter {
+           for (const filho of no.entao) {
+             this.executarNo(filho, escopo)
+           }
+-        } else if (no.senao.length > 0) {
++          return
++        }
++        const senaoSe = (no as any).senaoSe as { condicao: Expressao; corpo: No[] }[] | undefined
++        if (senaoSe) {
++          for (const ramo of senaoSe) {
++            if (this.truthy(this.avaliarExpr(ramo.condicao, env))) {
++              const escopoRamo = new Ambiente(env)
++              for (const filho of ramo.corpo) {
++                this.executarNo(filho, escopoRamo)
++              }
++              return
++            }
++          }
++        }
++        if (no.senao.length > 0) {
+           for (const filho of no.senao) {
+             this.executarNo(filho, escopo)
+           }
+@@ -322,6 +336,39 @@ export class Interpreter {
+           default:   return esq
+         }
+       }
++
++      case "Chamada": {
++        const fn = env.obter(expr.nome)
++        if (!fn || fn.tipo !== "Funcao") {
++          this.saida.push({ tipo: "erro", valor: `Função "${expr.nome}" não está definida.` })
++          return undefined
++        }
++
++        const argsAvaliados = expr.args.map((a) => this.avaliarExpr(a, env))
++
++        if (argsAvaliados.length !== fn.params.length) {
++          this.saida.push({
++            tipo: "erro",
++            valor: `Função "${expr.nome}" espera ${fn.params.length} argumento(s), recebeu ${argsAvaliados.length}.`,
++          })
++          return undefined
++        }
++
++        const escopoFuncao = new Ambiente(env)
++        fn.params.forEach((paramNome: string, i: number) => {
++          escopoFuncao.definir(paramNome, argsAvaliados[i])
++        })
++
++        try {
++          for (const stmt of fn.corpo) {
++            this.executarNo(stmt, escopoFuncao)
++          }
++        } catch (e: any) {
++          if (e?.tipo === "retornar") return e.valor
++          throw e
++        }
++        return undefined // função sem 'retornar' explícito
++      }
+     }
+   }
+ 
+diff --git a/packages/compiler/src/parser.ts b/packages/compiler/src/parser.ts
+index c3c997f..351d4f8 100644
+--- a/packages/compiler/src/parser.ts
++++ b/packages/compiler/src/parser.ts
+@@ -818,6 +818,20 @@ export function parser(tokens: Token[]): No[] {
+     STAR: 5, SLASH: 5,
+   }
+ 
++  function parseArgsChamada(): Expressao[] {
++    consumir("LPAREN")
++    const args: Expressao[] = []
++    if (peek().type !== "RPAREN") {
++      args.push(parseExpr(0))
++      while (peek().type === "COMMA") {
++        consumir("COMMA")
++        args.push(parseExpr(0))
++      }
++    }
++    consumir("RPAREN")
++    return args
++  }
++
+   function prefixo(): Expressao {
+     const token = peek()
+     switch (token.type) {
+@@ -829,6 +843,11 @@ export function parser(tokens: Token[]): No[] {
+         return { tipo: "Num", valor: token.value }
+       case "IDENT":
+         consumir()
++        // Chamada de função: nome(args)
++        if (peek().type === "LPAREN") {
++          const args = parseArgsChamada()
++          return { tipo: "Chamada", nome: token.value, args }
++        }
+         return { tipo: "Ident", nome: token.value }
+       // Keywords que também podem ser usadas como identificadores em expressões
+       case "ITEM":
+-- 
+2.43.0
+

@@ -113,6 +113,10 @@ export function parser(tokens: Token[]): No[] {
         return parseEscolher()
       case "VAR":
         return parseVariavel()
+      case "PARAR":
+        consumir("PARAR"); return { tipo: "Parar" }
+      case "CONTINUAR":
+        consumir("CONTINUAR"); return { tipo: "Continuar" }
       case "ROTA":
         return parseRota()
       case "MODELO":
@@ -274,8 +278,6 @@ export function parser(tokens: Token[]): No[] {
 
   function parseEntrada(): No {
     consumir("ENTRADA")
-    // Aceita IDENT ou qualquer palavra reservada como tipo de input
-    // ex: entrada email, entrada texto, entrada numero, entrada senha
     const token = peek()
     const tiposAceites = new Set([
       "IDENT", "TEXTO", "NUMERO", "TITULO", "BOTAO", "IMAGEM",
@@ -288,24 +290,46 @@ export function parser(tokens: Token[]): No[] {
       )
     }
     const tipoInput = consumir().value
-    return { tipo: "Entrada", tipoInput }
+    let placeholder: string | undefined
+    let rotulo: string | undefined
+    if (peek().type === "LBRACE") {
+      consumir("LBRACE")
+      while (peek().type !== "RBRACE" && peek().type !== "EOF") {
+        if (peek().type === "IDENT" && peek().value === "placeholder") {
+          consumir("IDENT")
+          placeholder = consumir("STRING").value
+        } else if (peek().type === "IDENT" && peek().value === "rotulo") {
+          consumir("IDENT")
+          rotulo = consumir("STRING").value
+        } else { break }
+      }
+      consumir("RBRACE")
+    }
+    const no: No = { tipo: "Entrada", tipoInput }
+    if (placeholder) (no as any).placeholder = placeholder
+    if (rotulo) (no as any).rotulo = rotulo
+    return no
   }
 
   function parseImagem(): No {
     consumir("IMAGEM")
     consumir("LBRACE")
     let origem = ""
+    let alt: string | undefined
     const estilos: Estilos = {}
     while (peek().type !== "RBRACE" && peek().type !== "EOF") {
       if (peek().type === "IDENT" && peek().value === "origem") {
         consumir("IDENT")
         origem = consumir("STRING").value
+      } else if (peek().type === "IDENT" && peek().value === "alt") {
+        consumir("IDENT")
+        alt = consumir("STRING").value
       } else if (peek().type === "IDENT" && PROPRIEDADES_ESTILO.has(peek().value)) {
         const prop = consumir("IDENT").value
         if (prop === "centralizar") {
           estilos.centralizar = true
         } else {
-          ;(estilos as any)[prop] = parseValorEstilo()
+          (estilos as any)[prop] = parseValorEstilo()
         }
       } else {
         break
@@ -313,6 +337,7 @@ export function parser(tokens: Token[]): No[] {
     }
     consumir("RBRACE")
     const no: No = { tipo: "Imagem", origem }
+    if (alt) (no as any).alt = alt
     if (temEstilos(estilos)) no.estilos = estilos
     return no
   }

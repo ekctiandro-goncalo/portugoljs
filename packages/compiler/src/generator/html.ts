@@ -164,13 +164,18 @@ function gerarNoHTML(no: No, indent: number): string {
       return `${pad}<button class="botao"${style}>${escaparHTML(no.label)}</button>`
     }
 
-    case "Entrada":
-      return `${pad}<input type="${escaparHTML(no.tipoInput)}" class="entrada" />`
+    case "Entrada": {
+      let attrs = `type="${escaparHTML(no.tipoInput)}" class="entrada"`
+      if (no.placeholder) attrs += ` placeholder="${escaparHTML(no.placeholder)}"`
+      if (no.rotulo) attrs += ` aria-label="${escaparHTML(no.rotulo)}"`
+      return `${pad}<input ${attrs} />`
+    }
 
     case "Imagem": {
       const estilo = estilosParaCSS(no.estilos)
       const style = estilo ? ` style="${estilo}"` : ""
-      return `${pad}<img src="${escaparHTML(no.origem)}" alt="" class="imagem"${style} />`
+      const alt = no.alt ? ` alt="${escaparHTML(no.alt)}"` : ' alt=""'
+      return `${pad}<img src="${escaparHTML(no.origem)}"${alt} class="imagem"${style} />`
     }
 
     case "Linha": {

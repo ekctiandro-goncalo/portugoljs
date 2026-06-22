@@ -95,3 +95,5 @@ export type No =
   | { tipo: "Retornar"; valor: Expressao }
   | { tipo: "Atribuir"; nome: string; valor: Expressao }
   | { tipo: "Variavel"; nome: string; valor?: Expressao }
+  | { tipo: "Parar" }
+  | { tipo: "Continuar" }

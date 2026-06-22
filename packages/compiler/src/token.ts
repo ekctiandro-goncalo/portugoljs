@@ -66,6 +66,8 @@ export type TokenType =
   | "VAR"
   | "TRUE"
   | "FALSE"
+  | "PARAR"
+  | "CONTINUAR"
   | "EOF"
   | "ERRO"
 
