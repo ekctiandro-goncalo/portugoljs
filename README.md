@@ -182,6 +182,96 @@ titulo {
 
 ---
 
+## Variantes de Componentes
+
+Além dos componentes base, cada componente tem **variantes** que mudam o visual:
+
+| Componente | Variante | Uso |
+|---|---|---|
+| `botao` | `botao-outline` | `classe "botao-outline"` |
+| `botao` | `botao-ghost` | Fundo transparente |
+| `botao` | `botao-gradiente` | Gradiente colorido |
+| `botao` | `botao-sm` / `botao-lg` | Tamanhos alternativos |
+| `cartao` | `cartao-plano` | Sem sombra nem animação |
+| `cartao` | `cartao-borda` | Borda lateral destacada |
+| `cartao` | `cartao-destaque` | Fundo com gradiente suave |
+| `cartao` | `cartao-interativo` | Clickable com feedback |
+| `distintivo` | `distintivo-acento` / `distintivo-info` | Cores semânticas |
+| `distintivo` | `distintivo-sm` / `distintivo-lg` | Tamanhos |
+| `entrada` | `entrada-erro` / `entrada-sucesso` | Estado do input |
+| `citacao` | `citacao-destaque` | Com border-left |
+
+---
+
+## Utilitários CSS (Tailwind-style)
+
+O CSS gerado inclui centenas de **classes utilitárias** para estilizar rapidamente:
+
+### Layout & Display
+```
+d-flex    d-inline-flex    d-grid    d-bloco    d-oculto
+flex-row  flex-col         flex-wrap  items-center  justify-center
+gap-1     gap-2            gap-4      gap-6         gap-8
+```
+
+### Padding & Margin
+```
+p-0  p-2  p-4  p-6  p-8   px-4  py-4
+m-0  mt-2 mt-4 mt-6 mt-8  mb-4  mx-auto
+```
+
+### Tipografia
+```
+text-xs  text-sm  text-base  text-lg  text-xl  text-2xl  text-3xl
+font-normal  font-medium  font-semibold  font-bold
+text-esquerda  text-centro  text-direita
+text-maiusculas  text-minusculas  text-capitalizar
+c-texto  c-texto2  c-texto3  c-acento  c-info  c-sucesso  c-erro
+```
+
+### Fundo & Gradiente
+```
+bg-fundo  bg-elevado  bg-subtil  bg-superfice  bg-acento
+gradiente-hero  gradiente-escuro  gradiente-colorido
+```
+
+### Vidro (Glassmorphism)
+```
+vidro        /* background: rgba(255,255,255,0.6); backdrop-filter: blur(16px) */
+vidro-forte  /* Mais opaco, blur(24px) */
+```
+
+### Animação
+```
+animar-fade    animar-subir    animar-descer    animar-escalar
+animar-pulsar  animar-rodar    animar-lento     animar-rapido
+animar-atraso-1  ...  animar-atraso-5
+hover\:animar-subir   hover\:subir   hover\:sombra
+```
+
+### Responsividade
+```
+mobile-only   desktop-only   tablet-only
+w-full   w-max   w-metade   h-dvh
+```
+
+### Exemplo com utilitários
+```
+pagina Inicio {
+    secao Hero {
+        d-flex flex-col items-center text-centro
+        titulo { texto "Portugol.js" animar-subir }
+        texto "Escreves em português." c-texto3
+        linha gap-4 {
+            botao { texto "Começar" }
+            botao-outline { texto "Documentação" }
+        }
+    }
+}
+```
+
+---
+
 ## Lógica e Scripting (Modo Terminal)
 
 A partir da v0.2.1, o Portugol.js também suporta **lógica imperativa** para executar directamente no terminal com `portugol correr`.
