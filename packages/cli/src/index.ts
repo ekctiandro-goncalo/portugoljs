@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander"
 import chalk from "chalk"
-import { lexer, parser, gerarReact, gerarPaginaNext, gerarHTML, Interpreter } from "@portugol/compiler"
+import { lexer, parser, gerarReact, gerarPaginaNext, gerarHTML, Interpreter } from "@porttugol/compiler"
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs"
 import { join, dirname, basename, extname } from "path"
 
